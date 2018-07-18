@@ -1,31 +1,69 @@
 const express = require('express');
+const dogapi = require('dogapi');
+const _ = require('lodash');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+const dog_options = {
+  api_key: process.env.DD_API_KEY,
+  app_key: process.env.DD_APP_KEY
+};
+
+// Later this should be from config.
+const products_n_tags = [
+  {
+    product_name: "Sponsors",
+    tags: ["service:sponsors"]
+  },
+  {
+    product_name: "Test hack",
+    tags: ["hackathon:test"]
+  }
+];
+
 app.get('/api/monitors', (req, res) => {
-  res.send({
-    products: [
-      {
-        product_name: "Sponsors",
-        monitors: [
-          {
-            monitor_name: 'Monitor 1',
-            overall_state: 'Alert'
-          },
-          {
-            monitor_name: 'Monitor 2',
-            overall_state: 'OK'
-          }
-        ]
+  // Later this should be from config.
+  var all_tags = _.flatten(products_n_tags.map( product =>
+    product.tags
+  ));
+  console.log(all_tags);
+
+  dogapi.initialize(dog_options);
+  dogapi.monitor.getAll(
+    { monitor_tags: all_tags },
+    function(err, monitor_res) {
+      if(err) {
+        console.error(err);
       }
-    ]
-  });
+
+      monitor_res.forEach( mon => console.log(mon.name) );
+
+      var products_with_monitors = products_n_tags.map( product => {
+        var monitors = monitor_res.filter( monitor => {
+          // Does this monitor contain tags for the
+          // current product
+          return monitor.tags
+            .filter(tag => {
+              var find = product.tags.find(x => x == tag);
+              return (typeof find !== "undefined");
+            })
+            .length > 0;
+        });
+
+        return Object.assign(product,
+          { monitors: monitors });
+      });
+
+      res.send({
+        products: products_with_monitors
+      });
+    }
+  );
 });
 
 
 app.get('/api/hello', (req, res) => {
-
   res.send({ express: 'Hello From Express' });
 });
 
