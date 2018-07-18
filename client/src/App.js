@@ -17,16 +17,20 @@ class App extends Component {
   }
 
   callApi = async () => {
-    const response = await fetch('/api/monitors');
-    const body = await response.json();
+    const monitors = await fetch('/api/monitors');
+    const history = await fetch('/api/history');
+    const monitorsBody = await monitors.json();
+    const historyBody = await history.json();
 
-    if (response.status !== 200) throw Error(body.message);
-
-    return body;
+    return {
+      monitors: monitorsBody,
+      history: historyBody
+    };
   };
 
   render() {
-    const { products = [] } = this.state.response;
+    const { monitors = {}, history } = this.state.response;
+    const { products = [] } = monitors;
 
     return (
       <div className="App">

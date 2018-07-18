@@ -24,7 +24,7 @@ const products_n_tags = [
 
 app.get('/api/monitors', (req, res) => {
   // Later this should be from config.
-  var all_tags = _.flatten(products_n_tags.map( product =>
+  var all_tags = _.flatten(products_n_tags.map(product =>
     product.tags
   ));
   console.log(all_tags);
@@ -32,15 +32,15 @@ app.get('/api/monitors', (req, res) => {
   dogapi.initialize(dog_options);
   dogapi.monitor.getAll(
     { monitor_tags: all_tags },
-    function(err, monitor_res) {
-      if(err) {
+    function (err, monitor_res) {
+      if (err) {
         console.error(err);
       }
 
-      monitor_res.forEach( mon => console.log(mon.name) );
+      monitor_res.forEach(mon => console.log(mon.name));
 
-      var products_with_monitors = products_n_tags.map( product => {
-        var monitors = monitor_res.filter( monitor => {
+      var products_with_monitors = products_n_tags.map(product => {
+        var monitors = monitor_res.filter(monitor => {
           // Does this monitor contain tags for the
           // current product
           return monitor.tags
@@ -62,6 +62,19 @@ app.get('/api/monitors', (req, res) => {
   );
 });
 
+app.get('/api/history', (req, res) => {
+  dogapi.initialize(dog_options);
+  const now = parseInt(Date.now() / 1000);
+  const then = now - 7 * 24 * 3600;
+
+  dogapi.event.query(then, now, { tags: 'monitor' }, (err, response) => {
+    if (err) {
+      console.error(err);
+    }
+
+    res.send(response);
+  });
+});
 
 app.get('/api/hello', (req, res) => {
   res.send({ express: 'Hello From Express' });
