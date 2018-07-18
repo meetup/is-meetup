@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import './StatusBar.css';
 
 class StatusBar extends Component {
   render() {
@@ -7,8 +8,12 @@ class StatusBar extends Component {
     console.log(this.props);
 
     return (
-      <div>
-        {product_name}
+      <div className="StatusBar">
+        <div className="StatusBar-product-info">
+          <p>{product_name}</p>
+          <p>99.976% uptime for the last 90 days</p>
+        </div>
+        <span className="StatusBar-bar" />
       </div>
     );
   }
