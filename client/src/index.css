@@ -1,5 +1,17 @@
+@font-face {
+  font-family: 'Graphik Medium';
+  src: url('/fonts/graphik/Graphik-Medium-Web.woff');
+}
+
+html,
+body {
+  height: 100vh;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: 'Graphik Medium', sans-serif;
+  background: rgb(246, 247, 248);
+  color: rgb(53, 62, 72);
 }

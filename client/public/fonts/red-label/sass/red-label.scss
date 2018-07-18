@@ -1,0 +1,26 @@
+/**
+ *  @file   red-label.scss
+ *  @author John Cockrell <john@meetup.com>
+ *  @since  2013-06-03
+ *
+ *  @description
+ *  A dictionary of styles used for the @font-face imports used by Red Label,
+ *  and helpful mixins that removes the need to manually insert Unicode chars
+ *  in the DOM.
+ */
+
+/**
+ * $PATH: The CSS url() base path for loading fonts - this must match the
+ * directory into which Grunt copies the contents of /gitmodules/red-label/font/,
+ * which is currently
+ * /usr/local/img_root/fonts/, corresponding to http://static1.meetupstatic.com[/fonts/]
+ * and
+ * /usr/local/tomcat/chapstick/fonts/, corresponding to https://secure.meetup.com[/fonts/]
+ *
+ * The domain will match wherever the (static) script is loaded from.
+ *
+ * @type {String}
+ */
+$PATH: "/fonts/";
+
+@import "red-label-core.scss";

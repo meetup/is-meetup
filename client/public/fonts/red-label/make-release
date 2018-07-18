@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Used to cut new releases, which involve tag creation and
+# bower.json updating.
+
+
+# IMPORTS
+source /usr/local/bin/tputcolors
+
+
+# VARIABLES
+CURRENT_GIT_TAG=`git describe --abbrev=0 --tags`
+is_branch_dirty=$(git diff --shortstat 2> /dev/null | tail -n1)
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+
+# =============================================================================
+# {
+
+echo
+echo "${t_white}${t_bold}Creating a new Red Label release.${t_reset}"
+echo
+
+# Check if current branch is dirty.
+echo "Checking current branch status..."
+if [[ $is_branch_dirty != "" ]]; then
+    error "Current branch is dirty." "Commit all changes before creating a release (don't want to forget anything."
+    echo
+    exit 1
+fi
+success "Current branch is clean."
+echo
+
+# Ask for the new tag name, and give the current tag name.
+echo "The latest Red Label release is $CURRENT_GIT_TAG."
+printf "${t_yellow}Enter a new release number: ${t_reset}"
+read NEW_GIT_TAG
+printf "${t_yellow}Enter a tag message       : ${t_reset}"
+read NEW_GIT_TAG_MSG
+echo
+
+# Update bower.json, commit
+echo "Updating bower.json with new tag..."
+sed -i '' "s/$CURRENT_GIT_TAG/$NEW_GIT_TAG/" bower.json
+git add bower.json > /dev/null 2>&1
+git commit -m "Update bower.json for new tagged release" > /dev/null 2>&1
+success
+echo
+
+# Run build for redundancy
+echo "Running build script (just in case)..."
+./build
+git add . > /dev/null 2>&1
+git commit -m '[make-release script] Rebuild for tag.' > /dev/null 2>&1
+success
+echo
+
+# Create git tag
+echo "Creating a new git tag..."
+git tag -m "$NEW_GIT_TAG_MSG" $NEW_GIT_TAG > /dev/null 2>&1
+success
+echo
+
+# Push/fetch tags
+echo "Pushing tags..."
+git fetch --tags > /dev/null 2>&1
+git push --tags > /dev/null 2>&1
+echo "Pushing tags to dev (chapstick)..."
+echo "Chapstick password?"
+git push --tags ssh://git.dev.meetup.com/usr/local/git_repo/red-label.git HEAD > /dev/null 2>&1
+# Push tags to "chapstick" remote as well as "origin" remote.
+
+success "Done."
+echo
+
+# }
+# =============================================================================

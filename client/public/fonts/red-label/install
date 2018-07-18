@@ -1,0 +1,248 @@
+#!/bin/bash
+#
+# install
+# Basic installation for red label dependencies.
+# Note: Since antimony has dependencies on OSX, there isn't a Linux
+# based variant of these scripts available.
+
+# REQUIREMENTS
+R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz" # bash coloring
+R_antimony="https://github.com/sjhcockrell/antimony/archive/0.2.3.tar.gz"   # command line fonts
+R_rubygem="https://github.com/rubygems/rubygems/archive/v2.0.5.tar.gz"      # ruby package mgmt
+
+INSTALL_DIR="/usr/local/bin"  # install dir for bash components.
+PROJECT_URL="https://github.com/meetup/red-label/"
+
+
+
+# getPackage
+#   Uses `wget` to fetch a file, then extracts it using gzip or tar.
+#   Will throw an error and exit if curl or the unzipping fails.
+# @param $1 : url endpoint for resource
+# @param $2 : variable to populate the file name
+# @return   : dirname of extracted resource
+#
+function getPackage {
+
+    if [[ $# -ne 2 ]]; then
+        echo "$(tput setaf 1)ERROR: getPackage() requires a URL as an argument and a variable name.$(tput sgr0)"
+        exit 1
+    fi
+
+    local url=$1
+    local __result=$2
+    local filename=$(basename $url)
+
+    # Downloading
+    echo "Downloading $filename..."
+    wget $1 > /dev/null 2>&1
+
+    if [ $? -ne 0 ]; then
+        echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
+        echo "$(tput setaf 1)       File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
+        exit 1
+    fi
+
+    # Unpacking
+    echo "Unpacking..."
+
+    if [[ $filename =~ \.tar ]]; then
+        local dirname=$(tar zft $filename | head -n1)
+        tar -xzf $filename > /dev/null 2>&1
+
+    elif [[ $filename =~ \.zip ]]; then
+        local dirname=${filename%.*}
+        unzip $filename -d $dirname > /dev/null 2>&1
+    fi
+
+    # Make, if needs making
+    if [ -e $dirname/Makefile ]; then
+        touch make.log
+        cd $dirname
+        make > ../make.log 2>&1
+
+        #if [ $? == 0 ]; then
+        if [ $? -ne 0 ]; then
+            cd ../
+            echo "$(tput setaf 1)ERROR: \`make\` failed for $filename.$(tput sgr0)"
+            echo "$(tput setaf 1)       Printing stack trace for debugging.$(tput sgr0)"
+            echo "$(tput setaf 3)DEBUG TRACE:$(tput sgr0)"
+            echo "$(tput setaf 3)$(cat make.log)$(tput sgr0)"
+            rm $filename
+            exit 1
+        fi
+
+        cd ../
+        rm make.log
+    fi
+
+    # Clean up compressed origin file
+    rm $filename
+
+    # Return variable populated with dirname
+    eval $__result="'$dirname'"
+}
+
+# installScriptRequirement
+#   Accepts a dependency script name, and a resource URL, then installs the
+#   appropriate script in usr/local/bin.
+# @param $1 : script name.
+# @param $2 : Resource Url.
+#
+function installScriptRequirement {
+
+    if [[ $# -ne 2 ]]; then
+        echo "$(tput setaf 1)ERROR: installScriptRequirement() requires a script name and URL.$(tput sgr0)"
+        exit 1
+    fi
+
+    local script=$1
+    local url=$2
+
+    echo "Checking for dependency $script..."
+    if [ ! -e $INSTALL_DIR/$script ]; then
+        echo "Installing dependency $script..."
+        getPackage $url dir
+        cp $dir/$script $INSTALL_DIR/
+        rm -rf $dir
+    else
+        echo "Already installed."
+    fi
+
+}
+
+
+# =============================================================================
+# {
+
+echo
+echo "$(tput bold)Installing dependencies for Red Label.$(tput sgr0)"
+echo
+
+# install homebrew
+# In this case, it'll be used for antimony, and wget if missing from system.
+if [ ! -e $INSTALL_DIR/brew ]; then
+    echo "Homebrew is required for installing a few components."
+    echo "Installing brew..."
+    echo "(This may take a minute.)"
+    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" > /dev/null 2>&1
+else
+    echo "Updating brew (just to be safe)..."
+    brew update > /dev/null 2>&1
+    echo "Updated."
+    echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
+fi
+
+
+# Make sure we have wget
+if [ ! -e $INSTALL_DIR/wget ]; then
+    echo "wget is required."
+    echo "Installing wget..."
+    echo "(This may take a minute.)"
+    brew install wget > /dev/null 2>&1
+    echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
+fi
+
+
+# tputcolors
+installScriptRequirement "tputcolors" $R_tputcolors
+source tputcolors
+success
+echo
+
+
+# rubygems
+# This should be installed on your system already, but just in case.
+echo "Checking for dependency rubygems..."
+which gem > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Installing dependency rubygems..."
+    getPackage $R_rubygem dir
+    cd $dir
+
+    echo "Setting up with sudo..."
+    sudo ruby setup.rb > /dev/null 2>&1
+
+    if [ $? -ne 1 ]; then
+        error "Problem setting up rubygems." "Check out the docs to troubleshoot ${t_bold}https://github.com/rubygems/rubygems"
+        cd ../
+        echo
+        exit 1
+    fi
+
+    cd ../
+    rm -rf $dir
+fi
+success
+echo
+
+
+# sass
+echo "Checking for dependency sass..."
+which sass > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    touch /tmp/gem.log
+    echo "Installing dependency sass..."
+    gem install sass > /tmp/gem.log 2>&1
+
+    if [ $? -ne 0 ]; then
+        error "Rubygems couldn't install sass." "Printing a debug trace:"
+        echo "${t_yellow}DEBUG TRACE:${t_reset}"
+        echo "${t_yellow}$(cat /tmp/gem.log)${t_reset}"
+        echo
+        exit 1
+    fi
+
+    rm /tmp/gem.log
+fi
+success
+echo
+
+
+# jekyll
+echo "Checking for dependency jekyll..."
+which jekyll > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    touch /tmp/gem.log
+    echo "Installing dependency jekyll..."
+    gem install jekyll > /tmp/gem.log 2>&1
+
+    if [ $? -ne 0]; then
+        error "Rubygems couldn't install jekyll." "Printing a debug trace:"
+        echo "${t_yellow}DEBUG TRACE:${t_reset}"
+        echo "${t_yellow}$(cat /tmp/gem.log)${t_reset}"
+        echo
+        exit 1
+    fi
+
+    rm /tmp/gem.log
+
+else
+    echo "Already installed."
+fi
+success
+echo
+
+
+# antimony
+echo "Checking for dependency antimony..."
+if [ ! -e $INSTALL_DIR/antimony ] || [ ! -e $INSTALL_DIR/galena ]; then
+    echo "Installing dependency antimony..."
+    getPackage $R_antimony dir
+    cd $dir
+    ./install
+    cd ../
+    rm -rf $dir
+else
+    echo "Already installed."
+fi
+success
+echo
+
+success "Done."
+echo
+
+# }
+# =============================================================================

@@ -1,0 +1,507 @@
+/**
+ *  @file   red-label-core.scss
+ *  @author John Cockrell <john@meetup.com>
+ *  @since  2013-06-03
+ *
+ *  @description
+ *  A dictionary of styles used for the @font-face imports used by Red Label,
+ *  and helpful mixins that removes the need to manually insert Unicode chars
+ *  in the DOM.
+ */
+
+/*  ======================================================================== */
+/*  VARIABLES */
+
+				/* In order for this to work, SASS fn imgUrl() needs to be
+				 * in scope for whichever location this file is included.
+				 */
+$FILE_NAME:	 $PATH + "RedLabel-Regular";
+$FILE_NAME_EOT:	 $FILE_NAME + '.eot';
+$FILE_NAME_TTF:	 $FILE_NAME + '.ttf';
+$FILE_NAME_SVG:	 $FILE_NAME + '.svg#RedLabel';
+$FILE_NAME_EOT_IE:	 $FILE_NAME_EOT + '?#iefix';
+$icon_lr_pad:   0.1875em;
+
+// Map legacy colors to swatches v3.0.0+ colors
+$C_blue: $C_lightPurple;
+
+
+
+/*  ======================================================================== */
+/*  EXTENDS  */
+
+
+/**
+ * %rl_icon_glyph
+ * Formerly contained at root level of %rl_icon. Separated out to divide
+ * concerns between the glyph rendering and the helper text rendering.
+ *
+ * Note:
+ * 1.	These are needed to make sure that faux-bold or faux-italic styles
+ *		can't be applied to the browser if an icon happens to be nested in
+ *		an element receiving these styles.
+ * 2.	Prevents inheritance of text decoration styles we liberally apply to
+ *		all <a> elements at the moment.
+ * 3.	Font-smooth is not currently supported, but we can use
+ *		`-webkit-font-smoothing` can enhance webfont sharpness in Webkit and
+ *		Blink brwosers, which makes icon fonts less blurry.
+ *			Since these attrs aren't supported in IE, Opera, or FF for now
+ *		(2014-02), you can use `transform: translateY(1.0001)` if there's
+ *		an absolute imperative need to make an icon sharp. Otherwise, it's
+ *		a huge performance suck.
+ */
+%rl_icon_glyph {
+	font-family: 'RedLabel';
+	font-weight: normal !important; // *1
+	font-style: normal !important; // *1
+	line-height: 1;
+	display: inline-block;
+	text-decoration: none !important; // *2
+
+	/* Control the spacing of the icon. */
+	vertical-align: -2/3 * $icon_lr_pad;
+
+	-webkit-font-smoothing: antialiased; // *3
+}
+
+
+/**
+ * %rl_icon_caption
+ * Formerly in the :after element of the %rl_icon mixin. Split up so that
+ * concerns are separated better.
+ *
+ * After each icon we're inserting caption text so that screen readers
+ * will be able to determine an icon's semantics. This has been confirmed
+ * to work using VoiceOver.
+ *
+ * References:
+ * http://nicolasgallagher.com/another-css-image-replacement-technique/
+ * https://github.com/bem/bem-bl/blob/c451e7bd44b298d23c7fff9bfafe1f0a514f6aaf/blocks-desktop/b-icon/b-icon.css
+ *
+ * Note:
+ * 1.	Needed for Desktop Safari (6+) and various older versions of
+ *		Mobile Safari (~4.x). Even with the font set to zero, you'll still
+ *		see scrunched up sections of text next to elements. Setting the text
+ *		to transparent means that they will go away.
+ * 2.	Needed for Android 2.3 Browser; text shadow is rendered even
+ *		if the text is transparent.
+ * 3.	Android 2.3 browser... really? Apparently, it can't render
+ *		size 0 type, so it renders it at ~1px (or some arbitrary value).
+ *		In order to properly hide it, you need all three of these rules
+ *		with these values.
+ *		- Set `width: 0px` and the icon mysteriously expands to most of
+ *		  its full width, and centers, so you need to use 1px.
+ *		- You need the height so that the icon isn't bumped up and out of
+ *		  vertical alignment.
+ *		- And you need block so that the width and height properties will
+ *		  apply.
+ *
+ */
+%rl_icon_caption {
+	font: 0/0 a !important;
+
+	color: transparent; // *1
+	text-shadow: none;  // *2
+
+	display: block; // *3
+	height: 0;      // *3
+	width: 1px;     // *3
+}
+
+
+/*  An alternative to %rl_icon, for elements that need icons but don't want
+	the font applied to all of their content - ideally %rl_icon should
+	use a similar structure, with all icon-relevant styles applied to :before
+	only.
+*/
+%rl_icon_holder {
+	/* The icon-related markup is placed in the :before element only */
+	&:before {
+		@extend %rl_icon_glyph;
+		display: block; // Override inline-block
+	}
+
+	&:after {
+		@extend %rl_icon_caption;
+	}
+}
+
+
+
+
+/*  ======================================================================== */
+/*  @FONT-FACE
+ *  This declaration is a hybrid of the Font Squirrel and Chris Coyier
+ *  declarations.
+ *  See also: http://css-tricks.com/snippets/css/using-font-face/
+ */
+/* IE 8 */
+@font-face {
+	font-family: 'RedLabel';
+	font-weight: normal;
+	font-style: normal;
+	src: url('#{$FILE_NAME_EOT_IE}') format('embedded-opentype');   /* IE6-IE8 */
+}
+
+/* IE9+ and Modern Browsers */
+@font-face {
+	font-family: 'RedLabel';
+	font-weight: normal;
+	font-style: normal;
+	src: url('#{$FILE_NAME_EOT}');  /* IE9 Compat Modes */
+	src: url(data:application/font-woff;base64,d09GRk9UVE8AAFTsAAoAAAAAZewAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDRkYgAAAD9AAAUBYAAF2+skaLSkdTVUIAAFTgAAAACgAAAAoAAQAAT1MvMgAAAVAAAABEAAAAYH72Xp9jbWFwAAACpAAAAToAAAICtkBbYmhlYWQAAAD0AAAAMgAAADYM81HJaGhlYQAAASgAAAAgAAAAJBUxCb1obXR4AABUDAAAANMAAAKSHDQfRW1heHAAAAFIAAAABgAAAAYApVAAbmFtZQAAAZQAAAEQAAAB+PKhCidwb3N0AAAD4AAAABMAAAAg/7gAMnjaY2BkYGBgZGjOvaPcHc9v85WBmYMBBC6GM6nD6P96/+p5GDgbgVxmBiaQKAAodQoOAAB42mNgZGDgYvjHwMDAw/Bf778EDwMDUAQFLAEAVhQECwAAUAAApQAAeNpjYGbLYZzAwMrAwWrMcoaBgWEmhGY6w2AE5gOl4ICRAQmEeof7MTgwKDzm5mL4B+RzMTDB1XAAIRAoMDAAACfbCWt42oWOzWrCQBSFv/jXFkrrvpusCw4xYlXSVbeKiKKuE40/GBOIMfQJ+gSlD+VT9SaZltRNZ5jLd+499zDAPV8YZMfgNq/ZqXAjquAqTzxqrpU8dV551tygyUacRu1OOk1SzRUe+NBc5YVPzbWSp847F80NTONt6q9HrucHU397Dty4rSzLdubD5dj5mbT0aOHHp30UmoVlMjMtq8BdlKyiMM0Gqmc5R/fgR8lGBXvPVl3V7XfswXUWU3zWjHDxhIJcbzkLucS0UVhybRzmDFkyFrreaV1tLUTFnNgTEWL+SZkwk06myt2dOBNWuT/93VD0pDocJfUgmZlnI91Akj3ZU3Tz16cjavDfv74BLE1RfXjanZG7L4NRGMafT6to3WkpvnNOq637tbrYOkisjCaNyWq02fwFRIRExaUWDBYTMUisBiGG9/1qljQiIWnyeRWDpRG/5OTkSc7vPc/JAeBBaVl+WPikS5JVyj48S67BElL44mcvz99OlcNChbTwolI6VKFaOvgRQC3qUI8GNKIJzWhBK4IIoQ3tCKPjl98pr7ChoGEQQRTdiCGOBHrQiz70YwCDGMIwRjCKMYwjiQm57U3MSTG8Ms1gDsvkIR9FKEFpmqYMLdIxndElXdMdRznGq5zlfc7xCT9xgYvOQT7gujLDII0MWSU3Lu4UzdMC7dCpuFd0wxFxV8Td40NxWdwXJ5uHuEH3wj03KZM0YRPSRf2uHc36SOf0tt7Sm3pWz6hX9age1L26VbtqXa3ZBXvj++f+xQfVh2llAAB42mNgZgCD/1sZjBiwAAAswgHqAHjavLyJYxRF0z8+k2R3xxGjkgzuMc6AHOINCIIXhFMEucMlEAgQSCAhB0nInc1u9phrj+wmm/s+SEiAEO5bARXiiYC++nrg46OPogIq9mx6k/x6sjzv9z/40Zmpnurq7uqa7qpP7a7iWFgIhuP4o8vjtr4Vuzku8bnlcdszEmPTFOY0+VFM5nFZCJG1YXBbgKKHYfQDRSqmHptvKhoUhP+rDNP0BR6mVZsfradXpg/HUtGYGIE9jI3AHsfGYM9gk7CXsSjsDWwxthJbj23BdmCpWBZWiFkxCfNiVVgj1o4dxI5hZ7FL2IfY59hX2E3sP9ht7B+sHw/DH8SH4zp8JP4k/jw+BX8Nn40vwJfha/CN+DY8CU/Hc3ETzuEu3IfX4i14J96Dn8TfwT/AP8Fv4N/gP+K38D9xfwgWogkJD6FC6JDRIU+HTAyZFjIjZF7IopDokHUhm0MSQlJC9oQUhFhCxBBPSGVIQ8jekAMhR0POhFwM6Q25GvI/Id+H/BzyR8i9kEBoaCgZagh9JmNXwtwJEyYFyYtDZPLEIJkSJC8FybQgmTpEJgVFXrpPgv1emhBsC/Z76T4Jdn8p2H1mcKKZ9/sFB5t5v/vk4FOw38z7/V4OPt2XvC9yf7D7bTODZE6QzA6SWcEVBUeZFZxvQpDMuq/E3CCZF2QGh54VnH1WUKXZ90mw3+ygErODY84Odpgd7DA7qMTs4LSzg7rMDuoyJ2iXOcFR5gRnnx2cdvaQEhMnBZlzgoPNCU47JzjfnKH5Jk67331y8GlSkLwYJPeZU4KDTQw+3e83Nci8LzJkuolB604Mvo6JQZNPnHm/bcisE+cGh54bFJkbHHNucJR5wad5QZF595nB7vOC882bGSTBwebNCpLgRPOCs88bMs+koBKTgrtgUvAVTwoq+GJwY744YUKQTAySF4NkcpDcl5wSJNOCZGqQvBwkM4NkVnDooBKz7u/Wl4LMqVuSU7LTErbHp49MSti9O2HX9v86k5H/dSbIHTyhw2bpEMX3YrgNx1sx3IHhJRj+N4ZzIbiE4SKGuzHcieOVGO7B8XIML8XwGgz3YXgZhldgeB2GV+F4LYbXh+AtGN6M4U0Y3oHjbRjejuH7MXTy8YMYfgBDDgA/hOHdGH4Ex49j+DEMP4PhpzH8RAh+HsMvYvg5DH8Xw9/B8MsYfhbDP8TwCxh+KRS/guMfYchv4B9j+Gc4/heGX8fwaxj+OYbfCMW/w/GvMfwrDP8Gw/8Xw7/F8Juh+J8Y/m8Mv4fhP+P4Txj+C47/huG3MPwPDP8dw2+HYC2KM1yELcGWYSuQ+1uNrcXWYRuwjVgscoRx2HYsAduJJWHJyCXuxjKwPVg2lovlI+dYhJkxC2bDOExAbtKJuTEPVor5sArkMGuwOqwBa8JasDbkOvdhXdgBrBvrwY5gxx6wPXD6ARARFfFB5MLIH6kp1FIqd8TjI5wjfn2MeqxWG9Bt1Zl0NbqT+kHDK4ZVhsP083Q+Xft4yOOljw8y4cxW5hj74Mi9o3564unRw8e8N3b9uGHjLj/51viHx197avNTtU+dfurbp+ufefBZ3XOG5154bsdzSc+dfCH3hW8n8BNjJn314r7Jd6csnFI/5eyU/50CX9K99OxLM166NnXZVM+0UdMGXo5/ZdgrO1+5/mriqz2vxbz2z/SjUSui6qN+nLl8pjDz5Cx+dvhsx5zn5i6bFzqv541pbzS+8fv8ljedC84sXLKw6y3roqjF6sUXRwpn5N/O4Og+5kyoECbb/UsDdjVwwEsUnA48KvAfNRwJz1NAeQiUaALqmKE6mA7Rs1o+Ryk1qDyFF///VugHGiRQIo8Brw8Ovn3vwiDG77MMYoaY49VXS4bbe/3f1QDd+4NYDnN8EBt1cz54+MYgtkyRI8jXqwax3eexwcFPv0WNMbHzvwfjwWP/CIi9qxZxJsfO/9EjV/fWkSBmFglVL0yAKpb2V2mg6ucXgIqhyW1qoP7pZ4C46jgNUE34CaoZMCpwmKLhSPpvIx32vYZWlw48Q3ESV8e3Enwz1yDqeZFv5ju4dq6ZFwmO93g9vJeXWE7KkhLF9RInWDxFpZzXWUmUO8tLfIYIbSR2lDvgUJVp3FwVX8FwlWi0MstZrb3K3s7V8nVSF9dgO2u/665x17sczTxRU8KZa9l3Uh0W81rCtoOf43xbzOWT9gwb65xvNYn5olkwcVbepDVrOKvEcXq+qMTSxJW4HA6nU1fqLOHcZkKy2UslQRSdnHPYWJvTZZcMDpHnbe1ZXgtrc6FuBrvA2Z1ssdtqzzdYLRzHszxv52wGu4Wz2Vm7zX6K5FAXns/m9/BExCPDsD18tp3jCZuVN7sMomgpZnmLWCzyhCRaLSxvFni7m3fyBVKK40Vtqhgv2hjJynM2kbBbBZ5ji6z5XJ5IFNh5GxrHLrKcaOd5fR3Jc1wp5yBgWTslOa1ivsGY6XDksbnOPIdVLBQFQXKKkiBwPMcbnUZ3ZllObWEj5yr2WjxETh3nPaVv5Os4xuZwHnQ6nQ53g/eEo6Kk0V1JuCpcFZLe2X7a6WIcosvtdBPV5SUeh8HZ0eVkI4ilWNkpV2UR4+TcnJMnnGU2q5e1ekttDoO3sqjIybqMYoZ9M5/HmZCCESPHY7zEF+Xps3kTJzGcyNltertQzNsYK2/l7YzRaoXDkXEkzq4UG7KrleWsVp43cKKFK7YXWJP5XKdFMkoWMcWpNSv249G6TLzRFl+ztWtH0+422/EKosPrdbr0ngpfCc+0WJtyOSNvk+wOzmkX+GJrnjHHvKfYaDfZeJ6wc+ssWYY60sSJkoPtfyGbskuWSlu1uc3caHUQnJTxoUsvWWuK65ni+uImvsRebq/K/cB4kss3wwW253hj4S7CiFQsMGQXcrad7E5bsWB2m1w7zi6+bfYJttKFZVE8l1WYU7QsL1/KdJjK7Xu5WtuP9nKCLxHANOlrolXjc5RI6HLoHKUeqcVwUERDsN6ijthDr595hpPEEtGnlfY6210NlddLDzpdhCRJTkkvOppOlu/z1DvE4/ardk6oySA8RVXbcvU2Z54rj/GmlMZ6tkhGZ4YzF5UMEdVES/mm8s3ObLuZtwm8Q0TbT+Q5vZgvWR3o7aBtggwqWaRiwlVYHmfX2wtKbG7G7hA4s76Q5yxKHUnpObvdyjFWjhMkPTq5HM9wnIW3GmxWNAKLBHkLT1jQy0V7lbeJ9mFjQYObinVvq7D5eIcd7V20IUVRJBxSXlmxwSqmN5kq8prQMf+BOC90SE5GcjiqxRqxxlEjuQiHS3JLek/lwRIvU16FdqnHVaLz+uqrW6qIEpfbhZRATAfjdZUJh6wE5/HxJYYSBzqUrMXm4ursFVyJ3WUrzyvZ5n6KiJhvxJxLhQx7PmflCnijPZXn0rlUbpZzl7vQYUSbihC4fD6PsSypjNm3qzqvzFYhNTvrSio8FR5tvVVl95VxDoNDQmdP4p1et91ql3iH5LLZXGxJcWpRnrXAwvE6jivk8rmtFm0duce6gc9wELTqWZhG2ZycaLXbONsp0i7Z0QkXObRfXVyp3cOU2QWnZJAESbSzVofdZG8gnPYGWzNjb7Lt56vtV3nJWGJxmNFrKfagF+iTqrSuareHZ7ycIDibRJdUIyGzudoc1c5qZEKXWFl6wCERoohMpK/Z90ljO+P1+SqQBd1ej8vldJV6PE6Ps8SJXofklcqkCkeJUMoRnNurLNKJnI/IlVl9tnJbhdVld3Eeu5NvtNYl+zZ5k4Q3THEFy/LSli99c/6iTZuthJk3ox1gt4owxJnk3OpNktCxK4vn0XlOEq1OZffYrHYrL/AugnNwos2O9gfPDxvLK3vCrrRYncRV+UFKLHG5Sthq38X3vJWNh71tzqPEPsn0IdosO7ZnF7K7NmWsKFhEZNlsubwBbVojV8AV2PN5K2cWhRIn4UTLFfUDHjCMcpU7r3BHuaPawt2q/F3rJxXqixx8I8fwJU08WiHy/RILb/9I8Xv5Vt7JlQhCcWF+ZupOc4IluUw8WuzjJB93gehbAP+gUj0FVTnH9pzNAQ/yf/Cna73vpBLFFeVWySA67XYHi/woslqpVPA6u1GUdogGiReN+fp8MVeyMhZJsHMGFAdtogX5Zqs7z1Gsraiort57xNuoK2tzdUjnpMO8x1ZqLRVEVyVR5S4rKzM4Kq3FFWxxRYUVDSfZkfOXrBLvRq/WwUk2wi457A5DGR8zp5CNGIkbbakc2o8ECkCcvdiUUaJHNrdbGcW4KEbZUERwE05RcCC3ai0qtLHFe9Jii5ELs1ltxeYCO+csI9wOXkTRDO1vEW0E5I05RvHIyB+g+GZHZ51HQVFED1Y235Rh2ckRdWQuCnbo2AtFYvGwsQEH+I5Ck4gcI3KCEvl4XpAcejgNfkHxkjI7wblEFDLRFBLPKnhGAN40kn4QA5GhIB0Bj8hnDpO3eshb6B/bTGpuPXPrGaa3PxKBDCN9D2skNUOd9pJCL/2gsTdU+ShBE0UhMRjJ0Pfq1TBy4WGyt4cEkcoIC10k6hk1BE/OD3WVET6a/MrNwcFvL7HnrYPYtob5g4ONCgL67jz2slcaxDbtjxwcbFr220dvfj84eOjm/EF8cczxwYGT57HPFnw4iFleTx3E8kOcg4MN57GDw8G7QC+vaCkFw3//uQuElg9imihsEJt5Hrt9exArQgMPVsbOB6pn/vVy3fUyMBpo/xnEChT2zdj5XnAZPBKBoX8nSFrj8L9POe286DBInMNhY4vcO+ucelGJmVan087YnMhdo392SYmsYRhmtHjMUpHNhsCA3cTbtEYfcsQOqVYnuhHA0DskVQRGEJjTjhwjw1XwXtsnto+0ttPiVVdnyRm7e2UL4ck2S9mGNHQiizMt2dxY5xoiAosKw0pmiFmOJEeOTspxoBgiGqVMKZ8Q8yTBoi/SbJc2SarCgsJ8G2vLl0ylRqVTCOYulviTXAdfixAggfTebdKbRMRjREdqksiKSWKqiM6BmCmmickS8oIEugkIqEgOQRo2FsUi0aGPMKI8B53iciYiBAvBKvlSqdRFiJJLQBiER9vGRaDj6m3R23/kW4RyyaaTrKLg1bt4Fy8igCG4S/QlqG4TPAjCSFJDUZ1YL1ajkEeIAjqXyJwOCWE8pwPhP4MT4SR0stCpchlOkJUup7uYHSiDOkoaEkVO2sVXEEodBTueR/jQ4bHVFvbkH+Pd9gauzNZgqyo6rTX3FB0xtRLWSlulQ1+dc8FcyuQ0SAiJxkh23pRJFCTuftOmV86UnVGAIWa1meJyZ9nSbUlcMoF0tdr1fLFof/u3Lf+TtN9USniKeWGbITWXs5tYs70QQcziYm2x5lUOzpMsTMTIYgxzFjqnSOgleQvq7ZXcpcqq0jqfIBlvmD4UnCUFCH+GYNgHT3a97bF6LSXCPifh2lcm1hgqRFFwlpXvFb3OXzxgoVjhW1+1yJHnKBDNJeklmURJpiuL01sbFkgc47J70j3JzhzkspDbdqLIo8ASt0i43YrZRBR3nAYXqkvIhJKCECTBJTEuFMZRcEbv1c64raLo03vQK7YzTkt5sUPvKOi2ljMnSAQgUU8iogiLwvwb5iMMxjlFh1RmqUp1EcVSfkGx3mKyJZqYDfkprrTGHV3Znzq6CLFMKhX1olgieDgiwo4txby8j3PzJXwpGrDa1pZTjpBDiVtCropHb1UiJJcbaemQJBS6Jc7mAmPLXCxS343OVqXKiVAVz6AX7K3WV4mlop2ROMkjVjl6UDwrI0pteaUmg73I6TKxLpPRaTPYLBI6m3ml8XYjTxRnmu0Ge44tt5C1WezIYxJW265ZVj2HsEA+Y80rTrfnmzZY0m12q82+zYlOBS/tSdevk0xVexh3cUmRZPPtrnm7zuizlNmQCSWBV4KmKPhQWlBVUIn8fGWDvcxQgQKyneUQ4PAaak9VOSRWLHWWOZk6N++p9AVtWOISBBtyDFETjQT8tZJCMEVyFTtMKHRIEtrKXKHkMLKZrnxzPoLCaTZdHlfkzK7a2ZZ/1vU+IVZJ5ciuZby9nG2zXre2SA1IH0erWCqVS25nudBge6/4D8vB/Aqby+woQKDWJrkdCJPaxWKDpVAUTexWBP1NVgIFehuv5yzWYiuTmpOZYzZai4vNNhRCLMV2K1Fsyo0rRkfBYrcwKGTl8Fl8DrrbCM7GJ67Si5Ol3Mp0b15jkosnPBVGO8eeIkWHiGKT3VV4IP+IpdF+XKxzeaUaR7lYjpST0NGucFe4Wku15hKV04bwhoFWdct6KgIzYkThscy2DJcV+SGrwyrluQudRIHTiMCjiBwpCncmUbKwRQ6LkGc3ciaUXhG82Wa2MWZbkdlmtVpNpmJrsaUg32Qk0pN2zMvR2xTowtj5om18HsrLsm1IfZSjZHM5XBZvte0WBJNEmKWcYnTgc/hC0e4261xWj9ltLysWOOccMccZ79hNONMc6Xa9I8NR5LIjUITSPQMn2IwOFjkddBQkXudQMDPyPE7B4UD7WXDa0DIEx9DpUvwo4qOEAJ0yGyHalAbkzESH3WVt5x3oJBWX2RBSMJ22HbK18yDE4RJFj+QViR7XlaMffnzpvcrm8kvB3eLpFj4xtxMRo4hHCEhGUbZYU3L6ZnPesiU5hQRaPXqdCCgg7IpqAhrC5aiQfMjyZQg8is4qZ0355YYLe48RNb6uA05DSemCHXaWhulXKV+BtMn2ljVfxyuvH2FeochYLKRLBYIwbGx55+2KvUwENtG4KRAyivJ0+fZV1Jf46pxSsWiTUsRkcXlGrlHa5BG5kjaCDrsGn6DQglzOFuKqTzxhNNjtkpNjEdIUrQiDoJjjJBw88lMGrsDtzmdL8vLddoOx0JhrZS15CHoaXQilcLHcamuiMbkoI3lTdk5+vtbusVYgJ+/TuZHrQqGKF5wKSnXzlRX6Cs6H3L7I7+OPE1/yXHmRgbM5HHbWabdJCNIVuEvy2ejmbPNavfhUNRxWt6Z6Y3lui7mEK+UVJ1kjiVXsPqnRVeElnC7kflBK61B8JcoakOdTIKjEKI6Jl5TkziEyToG3cKytyCF6ypWYij3iQJkO8nbOpqOeWsKHcDtCg4LdxqMcWeBR6q4MgtaN3rzN4q0v0Q/ZEz2hpfTbwBTKJqCMi0HuDjk/gleSIz2o20RxGs5MSRrRrZIfgo2U8kEBZ7AhR+FiHaKSYBMoDo/E+o+vo9AeFBRAiEYQDS5ekqxsOIjgyV7gRX/KrWw4iASRPAJvQV4viAZeGK20RiJ0E1E7vpmk1e9QItnvFZGUJpdk4QgQqaHVmBp1HaG+uvziHAbeCKP7MITgENZTz7m4/CqjtKeSLEJ9Efe+pPuM0DuGHPDCa/+9h3MgRT4NSvwnQQqO6v5s4JEDICWepIkQKtAb2IhKb6BXRlTuRWWjPETRE+KztPxlWGAZ7O8iu0jYH1im1BXKemjVk9SWHTu2sIG3YK9mSwKqjdRs7trRw8hF6p7OzsOsH9P07OjcwoSLtGYQFwZxDIFE1SDCfjgWOz/UX+xvo+BheBTuBxddcgo4AU7pwDDwEHj6czChyQx8WpicCuOfgq/B1wNMYKStP0IeHngKJsFkrX/ONhUd9iGt2Ub1zzko9SeCw+Ao2A8vWgMp8AQ8pYPD4EPw6VlwQroH+rQguQXE/w5eA6/LjDzS6Y8IDJefIsIX0oQRB15kQ8UcUVRgHfwooA5sDkz0xw5MPXvWH9s3VZ4oJ8JPQCCwluUHaig4CmqABoHU0UCzklxNQg0cjYoGlVFseG8ciV+hNSHxZJ+XGojW+K/HkbQ80H9NFd7n7cXRFU/2Uv5riOvHELcvWt3/Yi9Fq9b5H+l/hO5rUfl3a8I3kKAYqOR7gIBhNnIwJNaIAYRTI6YgO/ato3igUUGrepc8Al4B7wceayOATQMJHjE1EV8FRhwkoY3XilCjAlZ1+x6SB1ZVxBn5sXwyoOLh+f2IcR68I6sMVaQYCIPn4XnEJ7i+SxRMhwtQSWdFmA5QDWSIBEA1VNJZHqBWxM3gCUVDCwgLakYMDjoVgvRVRYwOqgg00KaJ2PBfFUe0IR20kFCL0Bp47CCpg1akrQapHXFq7x4S6amRRyD1wnj4zn4SnFO0Y6pIIhAmIvXeCagM4cADfgVl4Bd0YH7BEfk11D/DPwNZbiX8le7r1MBfeNnbP0P2+meoYFTfr63kb7dmXY9iBzoDv7SSt35T6v0rA7co6IG/qvpeU//w/fVbv029MRmlWJpRILKZxEEk2g6hNLGKVhmpHPTeflXHkNAbFqtUUX4VS4bLI4G3z7uXBG6FgtJQWr3dv5b6D4i8BCaC6Xr5Nfg7+C3wWuA1+BscogBR+TUwBTx1+iZ4hBH+Hg0qYSWzu2lfQaehs9PX3Mw2Nfo6xA5xf+H+1BZiIAG8R8EDMBtkgwOoBOl+kAOzEfcAVOh+NtwPwCfD15A03Aw+RTvjPK1ZQYfVUps2dB4pYKOBdk+350JHh+7jjzs6hDOJ7ToYBsKS2tcKiUm6+fMTE1eY4+p0EfVQ+65qsy/hxDH9L5pj2/dvYuAk9abt8RvZ5zQbd2yILWSgNjpuzwpPYodu/seJqHtSEhoJhiUlCWvbE3Ufz+9I9KzYE6dbCbWq2IINOzYanlNvjN++iYWTNJv2xx9jflEf40/s8MW+C7XaujjzisTE+fO1SYmodxJA42jbk84IHe0ff6zt6Ljg6d4DtNHaIwWdGzbpn9NsOrD9KAMmqY8eOHCU/UVztOvE4XIGaN/trrtoDs6N+ra36wBaWUc7WuSQjh3mC3XduneBVnWk/ETnUQNSYD/qDyZpjsYf2MgETsFJFHIgc+BcuAvRuWAuSAK70H3OEJ2DWnYx4Sh55kkXCbyhdFhBI0nlknOWX7zK+L2aFSQDRgQWUCDzKTAJZsJKPbwHD8Ee+A+iPaAH3AOVYBJH/s6AZk1ADUNgI/w18LQ+YJbHBsbK5gJSfho2gl8DahDChDeQDSTu98rKPOebyJdIObI/+r/3/9caTzaR1Itkf3TY/Vu4P1r24vI1EN1Ahvb2RVOTSX/0iPu3cPn4Gf+vp/BmWvNRKK35pi+BsvJZtuxyW20ladln5bJsWaius9WV19YiyKMt7rCh9iyfrU5nq/XV1jkJpzoolx2U8wXlLB3WITl7XSVZdEo19snzN1exdN9ceDb/2SXTJsfqytbUOmsLHXt0taQ7SYvqBc4sZ1ZBVpbNnag8Fjr33H9M0tY5a1ArEgy2OPbUkqVrtb9af1h95hVadRqc01b9fu2Hn3sI2v8b/IfaZNrcZjr6lJyvNR1tPXLUS4fdAE7tUe+RZM+mPwL5Ws+mlNhNZmKy/Cllr8zz5tufztKCkEDPrbpKR2mFrVIH2+UMauAluAzggZ6+l8Ay1cB1gLxBWEae3ZTnyNP9Hsh35FcWVTp0ILRRFf4mib9JhrrQLqDka1YyEKleRrKBa4FrGkTPkWWkjOpqRCLVq0hWviZf0yg00opeDnplSmfkT8LOU6tIpplUz0cO3xhNhoPRtPpLfHCwHIXCB5ZEYaEz/Beobd3CB93dIANkaru7PxC642Q6QGsPxl0Wurv73uv7UOGK3XHI/6Zru7cJi7fF0X0y3XdXG7dtZuJKAwxTr5rZ0R3Hhg9ipSi6qq9HYTiqGjFafT2UVm3qa6ZkQc5raREOp7booA+UpbZsEdJSdQEpIAby5by0ls3KI/TBstRUYXNLqk7ODeQFhICUmjb0CHzQ5yRlSRZl1KU5rUdoaUZM4Bsas1kXXoziJzaJRFji8lxSvixv3InugRiEIa6wsnfgGrWRhNfgNTUikdEkQFXNFpIFkZtRHVxDJmRApHoTkgHXNJvI8LVk4LIcgzDIFVTQKPLlmeTQMNvJPkVOEUANaIIr9ye7goRjApdZC91XQ2XnxBfuNqxS74731eSwsBt0Z9eIbdXVQ86ipqZNqMnWKfGtOmevgLiyTeaqq/cKNTno3cPQmhxhV3b2/TWFgvO0+hoVGBMYI/TTMiLK5acFeUywCH46yJPH9NOCIkf0DQaeoZqR5dLSkIvI1J4hgw+6iRPT0pClm3Uw8wwJM+8/TPx3WrNwuBkZFHFB5v2Hf/+7ufmw0JymO0Ny5P1qeDI5GIr7kGPyu9chYND/n3+AdzBk8JZlECvMWo5O+w90GKASyOfJ/vkDX1ITyTkkAWf1baHA51ZkeWUPw8/h0B5GGLNMeRHX0SYGQ5sYXAdDmxgom3gkKUf3l1CbFCy6nQwX3kRCOLo/TQaKB9ZROTVCW3WNYk5tTTWyZ45iTm3Qnoo5tUF7KubUDtkzJ3A38Jc2Jyc+L/hiKqtzWDSJpX8jBTOVRSNTBA0kbB5atGK5+w//nuhENgAZMNNJKmYRDg+ZEGQqhhl6UEw4NEA46EOROXIvaQfeoANX5dPENsrv7Y/sR5dKjtT0J85GkPLDdvKg/L7/NrjJyJEDkRT0wkiVAqyxvkh5oYYnVf29CE/Hkepw4TZoAIXwtTtAD2I+RrUYsBH8cBf8685w8Ta6gwtgwx2w4TaIgfo74Mc/Io79Q6vfQn8U2KAB4a8AFXyIoWGCGkFS1VPwYZT57dDAh75+BgxjQOH822oRFKrGzYevqsfN77rN9v1Hc/fjj+4wfe+p73z85lgWvjp/rAZsEFV3NAPlkKaaWtrL9xk6/5iv3hyXlbiTBZ1nqLFgw13NnRFDRL7zNtURH1sTY3ht/BH1/s6CjDZ27wKqKbk8Ybt+629faE5kH915gKH9P8MY6t896v2+zro2Zkavatf2nNgY/Z3AwxTYOA5u1ER8mUOr/gNiKFj4ByjU0P4j8F0KxtwBMRpaZR4BY/5AtfGw4b/tfTrU/uTr6piaTR3xzM0PVRltBZ379bTK0kNt0cQXJGQkM98tUHUcqDlyQv8/SP416KYSO3uyjxnO3FbnWVQJO8sbUtm+27uoJy9ojvbU7O1kl3yjykhJKkgwDLzopp5ERtbcHvEkiPk/Eg4+AWf7IBiPD+K689ggdi0K65OHSGjf4VlkRoalELmARyaodicsTYk1oEMQuz51SwG7FYYXbIlbnZCmg8TUhLSc1eVbdMfg4+VbhAUFW3Qb4eMFW6pXd6XpADG1K61baT0EH3YVeArKjDo4PzAMlP/wB1wDFsm6OzNV1YUNloaGBnf1sDG3r4FFAe0fYA0onwzfkIeVlXnKXeW6Q+Dh8p7uc13olBPfdTVXnyvo0W0Ejxf0CB+W9+iOgcfLe3LOJaBtTXyX0ByntG4F4aqegvUtQZ2XtjYloGX8pPLlZLgzDHRfXBi8Al0IiF4BvSBIrwAXdMNehY/oFbZvSxg6RW/BRXAPOi2IokP0FlgEMsEeiCjMZFF2WIrD+YCiiSxAhZYh9E6NeXECDGFpv1sD8X+98CdDa6D6zx9/BjhLq5M1IGTST2OYK/2rqIGrNLD3XdWE8yBCLgMRYAWIHN4CKITSPW+ilDUasVaBiIUIud8IJrnlyJXqlSk4ME11mTc2Q9wA8d1pi1C+MU3VH4nOAeLnN4+EeHraIp7hEBd+oI7dvicWJaLTac07tOZdzZH4uk3M2kA0RffNoP1RtOodDSiF16iI7RhYDlfC5WpwtYIEn4OVFFiFnlepwfUKcmA5jCxUuCvQ/SpYQYHVcAVcrUa6Ic7AChhBod6rhnqDVRSIRvVoNZJfpYyCihpF11Aj2mBvGrG+u+BRfwR4BIfbBh9wvp6KkgYnrUqhiqX+nWAZtN2zOLR2NxwLzpir8n3ZLh2M2A8n1sCFItwlwbfTxxcUcNqCFpvX5VX5akvq6/X7CtvTG5jG9KTynYasbJs5h91TlJNfmEUUZhVnZOhTvKnVmUx1ZmNei8XDaZ1mfx8t3yvN2G2LMs7Z81aibn1GUkZhETFD479pFb8o9CY1rm/Uba/ZUrnZt7oy2rvCaRS1Nm9gTd+kovoG1wnvu54rTt1l11XpS57oPMDzPWwlL+XXjDwIo09P1om8ite487yFviLCXFpT1GZo5S9XgvFXQQkIBwMIKK8EwxrKy5pszbam7LrdJQTd984sasrL9uIodk7xW6ZVBfl2raUcviMHjI3Njns+MLUSRPE68AIP9PkAT/NyWocZbApMvQGnlicnShM8cGQpHCPq6LCSImpbBqyFk6EEGfjMLF2GcY8pp/jtDG3LycPXPrt97V+6yhpHs6meF7WShhcFUdTzEi9JeqgCedndPQUgdj7wzQYL3taFi4CSo9EOpNBmjET79BqgcLh0EDMicEQUDtHQ7TSBU1PfWPgq2vQjNa9+svA7hiaWqr/7pPdrtOW/13z9Ru9UhgYVkELHpFDN0/4QFQ2K1H1eOZrqi+i/PhCh6VvpLzlCJm/fvmNXLNvPQQ8FIuVeTU/nru0JO3ZtYQNXoPcImZQw1I52Eta6bRDb/xiJcNqO8f8MYidO3kTRW+4LpZ4H5TAajoUkcMBO+Ts4GmQGNpjgq9bxCTBiFITwQBesAS/1P3wd1kBL/i/Q8wlcKjtfkTvBWnRFgx9kah5YSvTfCfxJBVLhrMDjd/KOJX2Jcvhq+SiSOQreBpdmd71Qtw5a4A0kMZMIWMBa6p9fwZaffmwlmhK5xZv1I2Hok/CBZ2ec/DqVGcqQX0Lx34ksGYn8hP8xcJzy/6QBa4FaJYBP5JGH9eCeRjh24B0Hc95xcks7CTC4zglfYJxwwrr57aTMPwWe38F8mvfZVvN00/Q34i3ppvjeDQVzs598aqs5xZxyOM74ZuH812Zad1vTW2LzZhF5s59IzjRmGeGIjXCZm4CeksBYEC7o+9f2DafmLl8+h+33amCkHKG5euniVRblZleXXZzDLEShfAu5ijzQtis+PnnXdsXYbeTrg5ojGRcQ7r7X8+IgEelcH9q3liaep/ZdfkfYtwjkBZZoOxd9t/jTQtk4TftZYdWat9fCu7BP+/banU+Vzr0WMGlL52xMfKsjsALs1r7VMVp4KzGwAqJq4saOsqufy6j9s8Tf156BdwHqdKbq7Gc+2fit9jPftx90XibC5deQ8eQFg5hpQvNgqLOiAtWmXFA+c1pHZWbkJuayEKmwY9G0xXMLdQHjtLmFuWtOr9WBu9B/Zk3HU0VzdbMDJtUac0PiQUN55QKyu77jbDE7SzYVfbbv99NnkSDwnz6Te3auD/X+dp5v6gc7LutgnrxE1ZGbWZVhgNvCBFIOXwjrYev012JaSHgLTFc1rVtc/pYhZkFx0iIW3oLTL8gPV4GQGPD49K90sB60yuG9AK8FD3x/9nddcAmDqnNKiDVG5qLN+hOtGkcFZ0WTauf6pqFZlUm1HbkZVZkG5RcMdlbSWHmbzap8rSfY7UXFJpM5D+YiewdXGyiapo23ZOZYMoszPWnNacqSUebTuqBkqZTlyrLnvIFsz2lyLQUOIyNyHC9yRHpJZX6ToaJiAXmwoeOsmZ0tm4zIDmeQHeaAQUpZ5OuvbUSL/G1okUvQImlVrEZAKBYc7vubJ/eSa8jpZOBwID0QjVK6w3J6IF0+jHK4aHmIBqJlxEc4OOClFi7s7b3Vu6/31r6dzyzcufAZFnWJpG7dApOVYujtXbiQRa7KG0hfqN+5b6dwqxdE9vYyvQsRlnwGoowNRhqe2dl7i70FvPLhW3oBCS1c+MzOnUw4ApsPYHhvExlKq6P816gDZAbJnCP9kfK1fnSpzpGB1sAsVFoDrTKicisqs1BpZcN5klYZ85TbLoTQF5MD3hEgMlEB6/DaPJInm8k8dO0iF2qQJgje9/aqehNRFjvgXUwGkAStaRCAQKPD68R54KTVGuAJpR94mCYyfeT0GXFx3VtBPazr7v7yi+5D9fVCV2a9DnLwOjWwamAVfA+817eqb6XqbP9R5fO0NFXggGbx2rWLGbrvC/XitWc+YOmwLs0HZ858wNBhPWqwAWSrKrZs8mxEuAWoYQwcj0oMgsFLNAhLj4fTQAxDq6Yogi8D9MD2/wTmUG1lrpbMeuWTMG1mfaq1KBk+FxipLUquyG8tI9CxnvHG/kFNaNZy5EMLZzlRNR8FYrWD1rzoI2dMj4sDdWgBW7sPoSV0oyXsDy7hRnAJl9ASVvatUvUfUhLG1lJ3cKocZSqLMRk+G2C1RjRV29BUqcoPFs6eSR1Uh4Y4wVI040SFg04DrQqA6FDwnTySkskAKf/HIlPyI4QoORyCHrwGpv8F8h2gjOjUwGhRJRr5IqOeg3FT4DL4OHw8N19rQifCVFxoLDQVFpmtxagYzUZzYXFeUZ4p12yza+HUyXBBOpzRbRVtolUqdBQ4Cp3wof1Q/fEzt+B5cF6SMwAi33zzy/t3ukudpc4yB+EUnZJTJBqvf1H2pQFEc2DlDDABToAvwhe1cvnsN+Rq+Dx8Di5DmMf2C7RKOihJUHwWabU88GDgQTHwh4wIQYd97H+ZCvQoRR4qqvvW0OSfx/BvBzW55zFk9CNo+QG0/MB/LAFl+bxkR8uHaPmjQb59aPkALZ83imj5Eoy7iWZm4OMuKyo2r8lr9hb7jD6Tr8hjLUGlzFxm9hVXFlWaqsxOuxZMnQwWpIMZ3S7RKbqkcofP4XOCh/YD9cfoIKKlc3KGYoiXv3nu/XHdRc4ip9FB2ESbZEMWmDmjbLoBRnNw5Qy0/glAsUCgfPYncjVAFgDIAsD2C0AWAJIExGcRfFuuLJ0P/BEYsgCchCwg319/YMgCz5D+Vf7VDrJ/df+qwGeBz/tXswpvtX8V4q3qX32fJyfQKpyCZXAbKj5UtoFtCBz7gEJ9ClX4TPgTJPoLfAb/TaW2xgqpKf17+mu1qSmo2gobwH5tahuqJsNX4CzEFWJaUuWXA8u1KS1nMw4avlQfPNvQ2sz2RfbNbmkVjqe26sJpoiFAoWP0OsqY00Gqfxb40T8DpIPpYNpwhLDRpkwb4r0KcuAelAy8BqZFnDsIbtJEPXXo5LsNlwyXwTT4sDpqTuLqZaz/p1fQYIFH4DRN3/ARqKZGNYT3p1FwmvwIQPXkV6izy+a1RxngCDjtU3VEzKeX3smMO8H+DTHq0PrGFUv1C9CswzVfJF5d+R5D31sJb6IRP1Jfani3+wQDR91TrV6aODdKT5PrYYObDDx6CPm1gYG5VGNtfTMrj5fHa5rraxtZ4NI0ZtamMYHx8jh1S1ZDOgNd6vSsjFQ2MC4wTpOSmZXOQpcmvT6rlZHHBcar02ozG5Ffedt/jAqowTRZraHvNQcISkZLCKAHNN8oNN9wNJ9SpRZoIkY+siwjOm4DA0aNUp271PHZDX1E1CMgQhPxBIb62tGaYYQ6YhY2s33emWUMeOKeKqIpatuJzPOX9B8EnqJWXrqaiM7bw2DaIvWS6MZD61laY1mEeoERmi8+6zh3iY0wjnwCPKGKMEZtXb8yY6mB9rcgq8kP7yNlNboUg6IX2BSg6AdDcDv9IB4qP/oqAgp4FDnQRcsTqJS0NRnbDNPV29Y0tKKVvywvT20Rjre06sArYFZL2xGhJVkHGuD+lhRUbdX5s/y1La2omqIDL8OoFrSBUlMUXLybVr0xiHmUjGaLEQNpONgPToPxaJ88DVLBU+BsKK16itYEKCEfhC1lAivUC40wTGAD+9VJaak7WTiNVgMwWtO86Z1EZiaKDHTfZJ6j/UdVK65EX0J+/9/qCxcuvMsOtNKqoxQNwzTbd2zbsjnh4AFGpMP6VXLNCBqGarZvjdu+fWv3AdShXyNX80HJuP9jBjTh68+A58/RmqfBVBycAm8qsKmWCoyDX8OvAk/CRZ8jN0PAR1G4hhN+hn9VpBAp5VW7rxnk59XfltZ3elkBqOXHAAlGM+ABMPwq2u+L9JJafhJ+Db4KjGNi4KcUShMnwYlwVWxCQmxsQtcR0IFS5fYjXfGxCoeFi2h/MrUpfv+Ro/u7jrLyJvXR/QmbYuPjN7GBt+FmakMcaunuOsHK0eoT3aglLn4DC2/ATZRtjPDF//zJO1mwXlQJd4XX9TPGCgITLl8F8XIq2I5/A9bRqo/BOgSoXHTYIWrPu8mntvXE9Wzct7qBaFy93LfQsHJ1UdY6dl1WTNqmpNikLQlx27bFbY9LiIN6+LjWWJiRkYf+5eTrklJ2pu3YnbA7Pmt7PpG3fVvxdsO8lQ1Ht7Bbju25+Kn+Su273WeY093nmj8xHDhgyj3IHsjZv2d/etfuzpSOXSUWLTCAUdsPxh3c3LWxXbepfX3zulqi9u1VpSsMby4r3L2WXbN7087tm+M3J6/Liiayok1LF+kXli6ti2bqotvWH9h6cMvRxHMZRPq59wo/NFw4560+xZ6uOd54dO+R9p593QcOdWvBOrCtuvrK5fa9+1o7m3VdzfvrDlQTVQcOeg8Yrr27e303272hdtlc/YLsFds2MjFxq9LnGbbEeSq2s9sr42t2NOxs2Nm8q9Xi0qKVP+ErRBHDqDu0vWfnkeQjycfTT2UTOafOmt41fPier+kse67p2L6DPQd6Wk/VvkvUvlP6fq/+ctGlPe8y4a5BzV+znDhAyd3fKHalyDspOOMiTHkvGeBE9lUHCBH0vNjV+2lbO3hUV3vSfUFA+8VeUsKVGA7t6zrMAlKzP70tycv4vlJJaum46FM5NU6NtNfm5brywKvjwQPLtu/5FmqOwRFFcEUOCrSr7HAnZ+GLRbNzl1ba5Uh2J7lztTtNu5O36SGp2dyR0FNSIjlKGMG1onY90wEf/SKpdREhOGBo9hwmGeIwaymcuZyAthXJgecFPVJdLWTLz0P3BSa8elDzv98ex9EufSAt1L/H/zxV665HpcpZ665zE/lfSn+gFamrjrS37m0315rrrA2ck3fxLmLJ8a03vtODRzWnyk80dDN8ieDhS7garb1eaHA0OP9pv338B8JkUn5il0Qi/TtJabdrtzubdEmSG+m6vupNpnnMv+Mb5iFVx+VNZ9IhATPWwknrkKaz8gOMoJe7POoSsPbfwA+O/oAAxXW4gIKTTsGM0+ngASLvS8cdRbe2r79rbP6LqPrIdVLQi2q72827DZ0tbV0sUm5vVmOahyn9WSWqpYNiKTK2QyO12/bybQXg5Zd/j0pKInkL10k6kG6ubNItOpBuziHdRv+UoOgmBXV7AGa8DScO6Zan6Ear96qFPJmB1mtMuJcUlO9//c82kpQ8V15044YAwqNu6KJuwIeEqKj+8P6HtGlp8FU4aZJ+EkCkeTfjD+8PvxEFHhJu3NAp8g9F3QjMlRdradV49b2bN+/dm3JzFItGhsGvllXxfi8VmBtYFBUlQNRRd7+vP9z/kLa5GbwKJv2o/xEiktbE9If7w+/PrVPkH7oRJc8NoLH7vlTHkOEe0p9Oa2Yqn1t7le+ilAK8sMx/zX9DhVpp1UjlUy4v8AauyUMFekFZ/7V+1FqC8P9MJIA6K81KQc1l0Ou/ofxUATWrZ8rpQ537r/lRl/5roEyZBmUl4bK3jYxTvhfr9yrF71WF+yPblO8kIim/Vyn9iBUYDh5B/bVxJFjau5dUfufiIkFkqBxNP1BAjZoyZRRL/1OsGXVzyj2mkRwyFks/kKdRLMbAv6GXqqnIz87Oz89mA2vU2fkVNTUVFTWsX6blMZTCZmgYNcRHx/i8RmlE0eK8WunF9kfSoJqau+zSZ1cvXfzs6sXlc+YuXzZH+U0OiG4kwUp8Dcq5VGebSQq8oLm8pWcx0z9fvXjLFpQHvxAgNePGjRnHDgxonrwz5g5DqxPVd+78eZvtG9DcGffnOKb/Ct13jspQPkUsQza7eoBE6CsMzAVj4Gg4F86BY1CZi8poMAYlpHOHfisylw1/mdYsx4WhbM9PqweoG+8viUIp0COaqMVLopiB4WoBDsKfNsWmNR9leNCkgl3qqCUfXEep1F3NjQ/evxH8GCaSVofgAv1AWCgdZvJ7qL7jfZEq0WKVLAYafKO2Wjjewvpf7F9C9Tvkuyp7kd1UpKf77mrMDrNkZmhiUPnhTqnday9l+h2Bu35nf5ZK8jg8Hn3/t/4nKNgFC1Qms9FuNBodpmFjYBco6M/vL1NxnhLOY6CJx9QejySVIGPOOEkOYu8h7PCv38C/BrH3jdhJEle4dJg0iIfXHkcrfY9WX6JgNIiGHwowGpU5cI72HwfAM35/+9z54+TNyQJEm0H5wFqLyChh8s3V56cIq4aNXbVamHJ+FeoYDT4UABpB+ZBbq1QE8BFcAVYQA+NoOIWaPAWORL2m3BTAqJs/ICHXcfL8qpvCuWFjz58Tbq46PzR7r4BCfDSaBgUPNKQAPxwaWbl6BbASDTsHzNFCzA6xhvGniXBaVQ9iUZoX+teLgxr/MOWL9GTEo/aAh1XHjdEHlxv6F6lXvNp5aAu75H1Vz5ZX960wwJvq5as3rLCwSfB9FQwZS8UnJyU42V8GUlSbnV2JPQZa3aDu6eo4jHh9KaouR0p7vCFcAAlg3018cHDgrY8GNYMxx0P7/qY1j1Brfp7Ar50wMJL2l2lfWHN45j0DrYlU3zt8/ec17MAndFgBVd/UWtZu2N9mzGhkGzPLdsTos/kcPo/h87ndtp3zApXaV9Xz5EqV5Zy9p01/3NfZ2MCABQOnqJTkHQVxhrid5a3JbEpr/r5D+p6KzpZWprW1s+KQ4VBnfkor25pSvmOLfmvBzpQUJvjtXxope9AxdgOfXPo0CalAEdWcU5/GM3CqOi11Txrbf0qzuy2zWVR+tdFUX9/Eyl7/Scoiqpp2D4lNUqdl3herGxKbqm5uQWL/78tFEDmdDFwObAzEBK4ErsiIypeVL4AzSQRLY6fBx8FEdGKGoz+VUp8GYkG6vohkaD8WBtNh7LfgcYgkwv5Afyql/i2Mhen6gElJEAImdIJUaYPYA8rHrmr4n38GsUcfU47jP7S6kKp+Y8/ctSuXvjU5a3pTZpYWvAmzzAhiboBJcDe0BMg8WAx2K1e+/CDYDYrBOPAi2PEeWBtLiBrwQBrQXG8CDzQDYhbQQKIZ/vk5DIyGJbA1EBl4sbHfIE9CmfGLAcqvb5Yj5RcBkCMqZZT0yWPQblP3gss4rX4XXA0dR/Yl+LtgHbgM6kCWGtSAKciPGIHqd5O9jYHtKPuCkWmLJ7HwbfCeZgu8rIK1/V1y7QQyHFyjVUYcTEYOEe3XCbS6lZq3OWrXK7nEpwteODrWANfA1+AMuDqZT3GnsvBkJVrOc3AW2EEkrt6xeIEePvwZxH99i1kmLala10LYNDAKgerR4KUdjDkp0bbTkJ4hOTPY43AkeOgJ8IKdeBY+BEevhK8YdiWLjmT2STARLHkLrDf4WfCL3CHHs1W8o1L/6Zkvvj91dWHyG3tmm68du/Bp67dE+OskvNtfQBWK9gJ9gIaHAtGBI0i5Cee/g1rG3tTINxnASPDgia/usnCEY+y/tiGsYK+p5WoNrS2OkmYW0m2oGYzVOzQ9GWcKTnPEq+eX/fSn/t3Wsy1HGTAOvgE2wEjAFxDWBrGxUQ+mglHIjNNufrl92TvMJ+VXmi91pc9dv3zxtvfdF6vfadqyZOGcZbFEuPz0J7LhOBg+iG1FmdHgB0bsmBzz3nD5IfD4CvA4+AU8vu4vUH874teovlO0+gXqj/dU8Av1pg3WorfZtwvXpW2II+Yv2DH7VX3EV1ELGpedWsscX/Vhyk2eqK4WpRq2KFllK+IK8/W73XtKcxhvdlluWd42bp1tuWl5UfSeVUlExG/nNyTv3Jm9jcjaZtqRpF/UturiRubC+u/SgIoHtPRn5+dXiE/f7/rsKz3/buHx3V2pXUkdCW3Rx7Vmj9lrLiOKyqwV1fpqV6W3nPGWe8pKS4mIr6OqK6sqKyvKK8qrfNXN+30nxEvEPntrcRNjaiqqM9YU1hRWFZYX+gq9RW4iCd6lbJmmjPw9ybviczfxREJSaX0qm4oObU47kdCb88ElPX+8rKf5wN6uAzXHxE6+vag5u3lPXVplItH5ZtXChfo8PpvLYNBa/JlPUXCWqAIzn4Qz4YynRRuYDqffBtPBLE3/LLiPak0s375ZvyZr89adzJYdS3Nm8C+J82vXHSRWH0w9eVG/193sq2dKa8urKisqfVWllSVdFdr9ZV0lXa4uR73o4YkKn8CXsh9sOhbftosIV34S5wAzhq8hI+pHkQPTA0bKV+DL9WWXZZfu8e4mSnY7Unbq+WWFG9LiC3MKcgvy8/Jz83LyiorMRlMBYSqw5uXoc1z5pUbGY/SYPOZ3Y7Rdye2JLQlNCb4YMZp4LWHuvCXM7LfG7IA0B1Xi1OYVJ4nlx5LPX9a3eztrDzIRm2oO7tt3ou18+7t1F0svek85D0rGSmOVqYYoqrbUNekrJJ+zlCltU3HZOXyOYYq4oDXmPLHuTPqlD/Vfd37+8YfMie5Tzad9ROnpE66jBvCFevxS1ZPqiPpSi8/kKyTgdAeVVpNUukPcyG/P3pWQtt24RYwhllUv7lrIVCfVp7XsITJb2ou6DEfF/VVteyvqvA3OekJqEGsq9b25vTs+YvI69jSn1RH+7wOvUk/CWXD6k8pbcfK/gRlg5m04E0zX9P8MmymzmMkn2BOsCcXxxoR8bV5xblFeYV5+QW5RFlGYaUnbpV/esv7cNubUto+zvue/EN+r7ukkDu2rPXxWf7jgQEoHk7x34/7FRwmxqFDIN4TLv/o9eN/rICq07/W+BApuR84oCsajMgNEge0gHig0XqEKn+mbMQLJRKGyvZ5UJBaRSCpqqC28mAQz/B4Qha4ZoaNIuq+a7iuiYLxEov6K1AwYX0+i+3a2bzoaB/G3b1We4++PGc+icBD+O/gNfIj7n0FTt4BLQwPZ+8dQz07/8tdfv1Su6c8+O336syioFAxso2CLHKW+y4HH4Ej4RCYMhRom8AZs6QsDlfAhTW2d6tujHx8COgPYexYugEXsQIn8BDUQpkhowuXX6bAB3D/Fn4awW6P8OgU7bEtI+BXwIGziDTyhFlfWzvxT6hRPlDaVfQAXaNMTRm99jlOcZb+R9ncgeSuS/x8kvwrJj1JH183808F0nij1NbEfwIXpO0ZveY7XhQ9ihdG5gxp8nwUHkeBLOiwLfBmPEH8RFTAHxgYmBFyBp1Gm8Dvww4fYY6bqvU0N/KUv9dCxYjV4Q9Bvvre0TdC/cvEHXtD/23JqkqD/Gjl86vDZRu97jYebGwm4rhHGfQX+1t/Z/83FXsbUmPjLaTCcEG40I6s/yNRf/bL0C8MXXxZlXmXRS3vwRpqgPw2HJz5nSicuLtz/8jjlJ5PbXofrMph9u9pWTIHh/JNJ+t1Vu054GSCDcIQxfpOf1suuwFh5QsA8BHvlNvCdHAa+x2UJbAiVJVr9GQVDzCQIASEdJAxhZB1cSI2e+s2dO999ayKnjRs39eXRLO2/Fij/r1zoz/8CKhD204sw9Bj57Z27331jIl8eO27qtKBcGQVDkVwowNF4+DHym7u3h0Z6cqwyUjj4FXn/t8Dj/l8BgwtAyb+BPhRMjCOpyXNnvcgO9GsmfTbnB5QtvKf+4bOrP7J9/Zp/zb02mYFMmK/MWMjCUNo/DIRqfGVlPuW3QGGFxtJy1o86/N3PaAqMRYUIxZwF16ltSYnb4toTD7L+Eeru9o7ug0kdcWx43zsgCgfrgVeOQtd0UBoK1vftRBmaH6pvLvt07pzl86Yw/ii4REnalqhvLv90TpA1PdBHgVIZqr9f9umcucvmvcRAD4RHSXlGYDpK//rvqCdcnHX16sVrPzH+//hvHyX7S1DuhbbXr8CroTU4RFKlgdfVz16ajpKpL39l6L528LqSda5Xv37xraufXbryPwquWnh4EMtX/rvPibOc+CC+c3/kIPbQst/8XwHvIHZL+b9tvPyMZRCzpDQPYs/OZW8NYhofwl6ae7R6BCXYlyTGMjs3Jxe0k74v3rrIvHVx2Z64+LiEktWN8cS56b9UtZNbdu6wMzlckpTuIMDiF+Ba8DRMNwSWq9dNSTZuZOEO8ErazCqoLV2omzxv/nMJECPEsW9OjWNaYaNKQOFz9Hjmg4k359zZVF2sXQULgb77t6mfAI9KXg49avDAdcDOVAGPBqy7CTQgD2TrazUnLMeNR5m9pRebD3QSp49L7e3kv7rLLjK+i3nnBD1K816ihIXSxkPM8jMfffb+cuKDFRnrBJRtbZlBnTsSu3pNbOzq1bFHzp47cuQcG57dXOu+cLm2FmB/CX8Jd09e8msunryLqn8BrLZGEj644K5tDpUR+I+lhNHCE/q+ZvXfowWBAR/Cj6mhGg1HqoeaRtOqgxrw5GUKvkoj3/WqZhH6tzG3GT6ma4YjwIP9MTXPELWjACYidVQH1QLA+Np7TM0t8KA/phmMaAaPbaxadJkIVPZrqGXrNyxj+tXqZetPXGJB3N8wzq8BcX9pwsHr4H1aRYIxSr7c97z//yviSaCiOLadrbvHKsLzCY3MTNsdw1PjQ33GPJeYGNcEf9AfFeKOgjo4yOKCjgiyjLgADW4sw6oDmAciIrjkqyfR5GOiSIwRjJ7k5P33kh9Pvsv3+CKxaqZ64FcNyfmnznRX11TP3Hur7t63G0VqcCeQBN94YSd+wiHb/pX/IJE28nd+xePY55kt5u6k3MpZNm0lPys3JzpJyUqJjVgeaabfk8hVU4ltv7KPSLu1DarV2+ibIl5sLC29akNf8VdL89c0KmVZDWv+tsKsPeY//KTxYmmNGT3prxWpAU//008EtZIsKCUT5fcOHnsZTbEF6mKmHHvx5UGlDP3Vjear1uBG8AbADyRvgkje6yVZPSjU+qg39SR6U67o/TLKjV43f+moVmX1SNORdvlQy+GOktby+wloNlnTaa5YF3c01kbu/zvZPbFUKZ1bPU5VHbvfs7rJ69233XPNp8mbX58cZyXBxD6PREXJZD6aRjiUi6qtGYAcJ4Dkk4XkDTm4DnhDUaB5y6Kp1B2Dhoe8SAQhvpkg5EUUPW+h57cA6vJdFp2ZmTtk/9LVwLuUr6/NdCpUjdwQnbsynXL/6tXAt5r31NFRbQQbZXO13tUA9w7OZW7TG0B7SLwiegVNQvYfUaYtD5DMvxI7eYVMomLtAX4oos3fUbkRhibKzC9inlMYmUhWv0U225g6wKNwvsKAvksBvhsNvN+j4d5nFOanSwAZ2Uysn5JgJeQF+bNW4krypJ85bMEf3+Imo3Fo7kq0yIbv4aRkoIQ8XQTIpMvfkRHKsn37ivep+4ssIS8opk8fo2+5kiPFR45YK9q5GDRkEwVFng46fbEi6hPqdlftkv+ND4R5SB/RhF27aS9a2FWdXScjjfTxu6po7xZfV11Vp6A+RIRAr3vwzmCq6G3eafRzBUlULI/wXkcS1eMjjBJXjf2iPSUlUSFryYcSpwrtqe0bS2WtHQVxPiN5wNtbUjvaW052yHis0J7SkkglWwtvp9KXEm64YG+2t7tkXzDJv5PJte9pbmi3UifskdDe0tKuoIbBO7Rtvkei5C0R/NfRRk7ikwWJy/VXiWg8iqysVD05VZaVl3Mqd6g5ORayn+QXFKxaxe3dW5Cv7lHzD+7ZGzQKXSIXKrPr1coqy8eX6S31OZUWQu/mcCLvqa09rtwQjmfWOqmE5QWJ341C0DAUQjEdJnFPBy+o//pY4omIngm12ZQmCxg1MxXyjDwTMhldFwiUhrUyogN8JqPmTb6uqqpWQc/YLSyodlOoy67KlMlb/pdER/pmR4lS4ix2Oq2klpiJi0QTqjTm95Bdd1CI9X96U5vRdNnd0x1VgSZRjqcMVdF9uOVwe0mrpezeOmq6rf5Pc8X6uKMf2Ejv+2TXa0eV0nnV41U1aXe0tYJM6r5dMY9y0/TbJydYqfu4/h0yj3LTu2gKMaFs5LbibDwSv4yzPZ6iQo/cVtjU2GZt29zqKJFLnBQqm9apraCtU+vE9Iw7aVtBW6enyFPoUdoKNzWxoMpgwMJbRhVk2atAwnmm3zd7BmC9AvYAdAMQ0wEuC0sH5KZ2lgm3+PJytdZVbqFrX5Gl5uVZSDxrKD6PXrryLPZEl0vNLHdZqBiMp6Ip3pWnZpXnWToSy101akW5BcWzXyEJFfSyvNzS0V5eoda4KiyUw/D9R75ffpcIT6hE6KMS4QmVCH2UT568BZ54d4hJhalpibZ3+cSU5tNFyk78C9dW2NzUbkOQP9O82VGkkKH9i8WYNR99+tnFjzo7L8Z/sHRNfAwrYdo4oFvEAkhpQbf0Azrdp7qBIdfaQo0+Igkdoob7yHPtQko0CSfNpYvyiZJPxjyk1EtPNqMzO6nbPvwkeHTrSbL84YGWzKYMPIz8HH5p5R3Xubbe7nDswYnVVScaGhssbafzuldd8s/wRoSTanSE2u2LSUq7WTI9lEiU6Ndpn3Cqv8Tr0ox4qExVdDx51X6SPXT6CO/okFFMDYoir1DN2aS5xR3OIodnx7mEcM+OtqIGDypBGeH1x4tPO+vX/ke4s95RvN3JIiMvefehyWgDmszQ+u/7A+ZkaSy1n7dIgl/Ubmhx2irtOjHWjWwdo5Ap2hfZK1oTPztqwTe+4qaj0WhGHJpvw9dxHF5Nj9e1OEynK9p4Pyd2nDrVIXvH8WdPJduVKMGenLJB9o/j7cktHYovVjOJG5JT1sv+L9jIWeW2cPZUC53/BX/uVMoGKqy0+aJ9U/IGWUukE051KF8L7WwC5duzrVSGBKtIxCISve5KQLdEKIpCobgMhRq9qmQ2ie7c42qlmyrYt8O1SiGjJuu4fI0/VlNzTME5Aoogf6qkE9xuy6VLbrfqyXVbSBNq5lzl2SW5+3MPZxe6gkaRJtKcm6s63bkWiZuqfSUSP6rlllyIS59nJRv7+5BD6IlrXJIgE0LquEJV8hWq864t7lHsgO+59nkPZQCJ40SJbhGvjvaEBtAfLqJQlUK+EhBR3Q7k4O0ABzQZRYIiwBAJIOHbIvFusdxVVeg+7N5fVVJOJVkT+pu7Uj2eW2mJu5jr3qnm5FrIDDKDwxXCsayanfISPiMrK0PRdgskAkXk0Bm5uZa4Nbk56k53TgCFaIZCDbfkfNx2ikIiRWEjRaFhyTqGQm0AhYMqq3plKGxlHBx4d4mOwn8YMPBDGfjbAYU+NAC97Jk6EDSkKgioQVAy60Lxc9ETovOw1wSO1k3Qpeqcur26Ql2trl7XouvQden69VAfop+mn61fHHjbqUt/QF+rb9af1l/Wd+q/0/9iCDKIBqvhHcMyQ4LBbkgy5BoKDA2Gy4bPDF8YfjZ4Df1GzviycabxfWOsMcHoMKYatxl3Gncb84wFxnrjGeMnxtvGb41/N/5ofGx8ZvzV6DP2m8ymENNwU4RpnOk101um903rTKmmDFO2yWVSTYdM1SaPqcP0kem66Y7pnukn03OTxnFcECdyMjeGG8dN5KZyM7g5XBS3gFvJ2bktXDa3jyvkyrljXBN3jrvEXeVucr3cf3EPuT7Oyw3wPA/5obzIW/gR/Eg+kp/Mz+Tn8lH8In4Fv45P5rfz2fx+/hBfydfzLfw5/mP+c/4r/i7/Hf9P/if+If+//L82gwG+3w1W0ZP/blag+oS5mAPiBJBEqW+aB14DcDQdkScCOJluojfBXDALoDLpxVWR5UZYjkSmcpn/LVHyjtIIhECyhPblRsCzPpukwGXgL7R9AGAg10XdEnw3bByAKHQMPXBzwMLlyxcqEv5RWHhleZcMx4J3ABwFWNx4KoCTAAsms+suvNYJ8B48ehPYBPBovMcFFAqaxOVJQ1yi/5gf+CE91nmBP8h7jDbgDfLWeem4l44r0q85JvZoD+6F/w/GNPD7BfT/Sdvr/4P/j2iSgl73h3hzyPf4Pvoaj0VbUSJOJ0YcY4asSphVEEO+68qVLoWSR+hafmWhDLVIMkpLRHPJRvwSceCXnuBs9AA1mKmOn4RW3UFrbfBtoN3U1sAIsIDCvQBEABkOPukTKgED03YSYK8IguJ8oIXGUpKvAzAZzAZwPKCQ/naAg4H2VwG04nw8gSrEEnwQT6gF2gRtlHaQ/uQQ18eAzCJJioQGBOJg4RbkkCG148pPH2k5cMhScCjnZF6rWX0fzUFh0wEcLJMaCaADzAGwYlNxjGsTsWgx4YP2Is76PPzMoc781hyzio4TA1o0aDPKkF8IFMmsF1AS/QsW04GYIojpcilwLhAZx0I8Gw8ld7Q3v1G+0WaQEm229mcyGv5e+wX9d8XFYD2QUaJgr996/rI1Bqzeus6+Qw6m9mjuM1Wp2rSloqhILS6yFace2HhAhvGUOPsYGewAHiqtVXAM2sbVnDpfesF2/kJ+1ik6QLZx+bXVByptdNYwqnSaX6B3BwbKlgE0nO5Fug83sGCUA7Ia/f5QIVCGfzggkHyhQqBMH45Ea1GEFU+mZtkbAlp65xKaW/HUfLSYvU8HLWJ4JlEM7jEGMJG3oSMtzQF9/5oDtHuaI7BftwKWtYT8errW1B0dCduam9sgGokEqM79jeZjGRqqGh1NP0q0VtYtdA9ekVC2zBTyNOqEu5pfQH7HrlqPclXw1NXWyxDtRxzuOwBYcTnuQ9wwyNKxLBOrwMV0XdqarwC4hvJuGJ8JoLCUDjnS2L/TzQAlQQepZ/DyTfKBqsC1VObGAlbGB42+MoiXEZM2BX2rbbBBlnBhiReI2UIJC8EGEAjcwcxHJLid6Ki7lE0mkEUFZDcU0QtyFp0dLKIl9CzDAZ2h+NaALvv7sZDgBMd+Z2P5aQvsuXatB+q3AzhYkRtDQVNRKCQ9pKIDoArUA6cy6QO1MNRFruPhm83kgIDMxTAH5AGYEL5l3870VCv5o5D04ebWI/Dh/R9+/XXmD+MVOG8JpXYzU3ZlzGg0ngCwGd1AXU04zOyv15AIKbsE7EcKbAyhjQ+MFADIRAoTJ/C5Ipma+Of/gBMnERPh/vITXA70KhTWUiK2pTU7GFLpeTpIGS0fIidy0lVCZRC9S36+MhYNmYL0GRbYHdhBWUCOhpQrZiIH3WwzIb6De7zLvMvwHa0Hnth2Xj1xwgIlTgdFbSiahoeyB9sg3u67qy8HRlgO9KxvhAMD/dQQFPbk6fQQxUj8HuhoTmuToej0OFSn024Ph4jfBphKh6xcJpYlSXkYKAM+dsh8mOLIFaNPydVizQQLqOEMJV6k1D+UkZuRcQCGnHn6T0gcZBakvxALJVMe3R70w+dBItcQvaVT+wMV2g99rcK9u99Ab9nguxaMEJXpoWpV4c8PAiG51yCaRo2eMDINUt/xYHp4STpEfrwYL0Z+iK4WYZMZmwKLzPLtMI3cIF2btTDIFpxl4aFIhcQ0bagAI1GoLIF4HkZGUi8uT4iEzAQrEC60UjhKtUeoVIAsVrhAjJgKw3/8AY1Uf5gMQww6XR4c0AfTxSlipSRQ9FDechInTHMoUAsV4P8BV+unzgAAeNrdkCEOwkAQRf8uiEJ7ABBYHCRcgBoSDAaCQKJQSASOChSeBAe6h0ByjZ4AB46y/O1OaVPBARAv/8/sdH531QPQi/8jgEkDWLWongfsPJg3FcSQIQnZS/N+I7IzeMkMvTYOO4eW62V7TtSjzP3A7oYiCf2E2qb2yYh+zrw6/VO4y3eh/J9pwhjJHJCZz/MKytdZxt6D6lKn5MBdY8mP2E8cuAqmBOTeVmNSK71RmbNTtZU6Ls70JX8v7lmK7xB7t2+Gt6noqqgbN+ra1cAHYEZUZQAAAQAAAAAAAAAAAAA=) format("woff"),  /* Modern Browsers */
+		 url('#{$FILE_NAME_TTF}') format('truetype'),  /* Safari, Android, iOS */
+		 url('#{$FILE_NAME_SVG}') format('svg');  /* Legacy iOS, Legacy Blackberry */
+}
+
+
+
+
+
+
+/*  ======================================================================== */
+/*  ICON SIZE PRESETS
+ *
+ *  red label was designed with a 4px scaling grid in mind so that
+ *  it can scale up and down nicely.
+ *  You're welcome to use the icons inline with whatever font size,
+ *  but they'll probably look best at one of these sizes, used
+ *  like so:
+ *
+ *  <i class="icon-s icon-user"></i>
+ */
+
+/*  These need hard-coded values for now */
+.icon-s {
+	font-size: 16px;
+}
+
+.icon-m  {
+	font-size: 24px;
+}
+
+.icon-l  {
+	font-size: 32px;
+}
+
+.icon-xl {
+	font-size: 64px;
+}
+
+
+
+/*  ======================================================================== */
+/*  ICON DICTIONARY
+ *
+ *  Currently supported icons. The full dictionary for future
+ *  expansion is here:
+ *
+ *  https://docs.google.com/a/meetup.com/spreadsheet/ccc?key=0AsxzEW3cE_a7dGI3V3NzWUVjejRaRTloSVhxWldkMnc#gid=0
+ */
+
+@mixin icon($class_name, $unicode, $caption, $defaultColor: false) {
+	.icon-#{$class_name} {
+		@extend %rl_icon_glyph;
+		&:before {
+			content: $unicode;
+		}
+		&:after  {
+			@extend %rl_icon_caption;
+			content: $caption + ' Icon';
+		}
+		@if $defaultColor {
+			// some icons, like logos, have a 'natural' default color, which
+			// will be applied to the icon if it is given the additional class
+			// of .icon--color. This works for basic or knockout-style
+			// rounded-rect icons
+			&.icon--hasDefaultColor {
+				&:before {
+					color: $defaultColor;
+				}
+			}
+		}
+	}
+}
+
+/* Brand  (E001 - E020)
+ * Reserved for branding elements, like meetup logos optimized for
+ * different sizes.
+ */
+@include icon('mup-logo', '\E001', 'Meetup Logo');
+@include icon('mup-sticker-mini', '\E002', 'Mini Meetup Sticker');
+@include icon('mup-sticker', '\E003', 'Meetup Sticker');
+@include icon('mup-wordmark', '\E006', 'Meetup Wordmark');
+
+
+/* Time  (E021 - E040)
+ * Representation of times, like calendars and calendar-related actions,
+ * clocks, etc.
+ */
+@include icon('calendar', '\E021', 'Calendar');
+@include icon('clock', '\E025', 'Clock');
+
+
+/* Location (E041 - E060)
+ * Location pins, carets (for I am here), etc.
+ */
+@include icon('pin', '\E041', 'Location Pin');
+@include icon('ios-location', '\E045', 'IOS Location Caret');
+@include icon('hollow-ios-location', '\E046', 'Hollow IOS Location Caret');
+@include icon('android-location', '\E047', 'Android Location Caret');
+@include icon('hollow-android-location', '\E048', 'Hollow Android Location Caret');
+
+
+/* Navigation (E0A1 - E0C0)
+ * Elements related to top-level navigation, like tab icons, search glyphs,
+ * settings gears, navigation forward-back arrows, etc.
+ */
+@include icon('sort', '\E060', 'Sort');
+@include icon('menu', '\E061', 'Menu');
+@include icon('search', '\E063', 'Search', $C_blue);
+@include icon('settings', '\E064', 'Settings');
+@include icon('log-out', '\E065', 'Log out');
+@include icon('android-options', '\E066', 'Options');
+@include icon('android-options-rounded', '\E067', 'Options');
+@include icon('more', '\E068', 'More options');
+@include icon('ticket', '\E069', 'Ticket');
+@include icon('activity', '\E0B1', 'Activity');
+@include icon('meetups', '\E0B2', 'Meetups');
+@include icon('groups', '\E0B3', 'Groups');
+@include icon('profile', '\E0B4', 'Profile');
+@include icon('notifications', '\E0B5', 'Notifications');
+
+/* Settings Navigation (E0C6, E2A1 - E2A4)
+ * The icons that appear to the left of Settings section titles
+ */
+@include icon('topics', '\E2A2', 'Topics'); // Listing/topics icon
+@include icon('money', '\E2A3', 'Money'); // Money/payment icon
+@include icon('other', '\E2A4', 'Other'); // Misc settings icon
+@include icon('contributions', '\E2A5', 'Contributions'); // Contributions icon
+@include icon('all-transactions', '\E2A6', 'All Transactions'); // All Transactions icon
+@include icon('member-dues', '\E2A7', 'Member Dues'); // Member dues icon
+
+/* Generic Actions (E0A1 - E0C0)
+ * Things like addition, subtraction, circle-xes, etc that can be used
+ * in really general contexts.
+ */
+@include icon('plus', '\E0A1', 'Plus', $C_blue);
+@include icon('minus', '\E0A2', 'Minus');
+@include icon('check', '\E0A3', 'Check', #62AC75);  // $C_green from sassquatch - needs to be moved to meetup-swatches
+@include icon('x', '\E0A4', 'Close');
+@include icon('circle-plus', '\E0A5', 'Circled Plus', #62AC75);  // $C_green from sassquatch
+@include icon('circle-minus', '\E0A6', 'Circled Minus', $C_red);
+@include icon('circle-check', '\E0A7', 'Circled Check', #62AC75);  // $C_green from sassquatch
+@include icon('circle-x', '\E0A8', 'Circled Close', $C_red);
+@include icon('hollow-circle-plus', '\E0A9', 'Circled Plus', #62AC75);  // $C_green from sassquatch
+@include icon('hollow-circle-minus', '\E0AA', 'Circled Minus', $C_red);
+@include icon('hollow-circle-check', '\E0AB', 'Circled Check', #62AC75);  // $C_green from sassquatch
+@include icon('hollow-circle-x', '\E0AC', 'Circled Close', $C_red);
+@include icon('copy', '\E0AE', 'Copy');
+@include icon('roles', '\E0AF', 'Member roles');
+
+/* Special Actions (E0C1 - E120)
+ * Context-sensitive actions unique to the interface. "Like" thumbs up,
+ * stars, refresh, rotation, compose, radio buttons and checkboxes, etc
+ */
+@include icon('like', '\E0C1', 'Like');
+@include icon('star', '\E0C3', 'Star', #FDF77B);  // $C_yellow - needs to be put in meetup-swatches
+@include icon('hollow-star', '\E0C4', 'Hollow Star');
+@include icon('half-star', '\E0C5', 'Half Star', #FDF77B);  // $C_yellow - needs to be put in meetup-swatches
+@include icon('info', '\E0C6', 'Info');
+@include icon('refresh', '\E0C7', 'Refresh');
+
+@include icon('lock', '\E0CA', 'Lock');
+@include icon('unlock', '\E0CB', 'Opened Lock');
+@include icon('compose', '\E0CC', 'Compose');
+@include icon('edit', '\E0CD', 'Edit');
+
+@include icon('rotate-clockwise', '\E0CE', 'Rotate Clockwise');
+@include icon('rotate-counterclockwise', '\E0CF', 'Rotate Counter Clockwise');
+
+@include icon('radio', '\E0D0', 'Radio Button');
+@include icon('radio-selected', '\E0D1', 'Selected Radio Button', $C_blue);
+@include icon('checkbox', '\E0D2', 'Checkbox');
+@include icon('checkbox-selected', '\E0D3', 'Selected Checkbox', $C_blue);
+@include icon('checkbox-add', '\E0D4', 'Checkbox');
+@include icon('checkbox-selected-filled', '\E0D5', 'Selected Checkbox');
+// NOTE: For these checkbox and radio solutions, I'm opting for icons here
+// after wrangling with different browsers' font rendering algos and
+// interpretation of how vertical height should work.
+// Instead of having googly-eye radio buttons and checkboxes, v0.2.1 of
+// red-label just makes them large glyphs.
+// In the actual CSS, we may be switching between different inner content
+// and captions, rather than actual class toggling. But, it's still useful
+// to have this information here for reference.
+
+@include icon('export', '\E0AD', 'Export');
+
+@include icon('delete', '\E0D6', 'Delete');
+@include icon('bulb', '\E0D7', 'Bulb');
+
+/* People (E121 - E180)
+ * People and group of people related glyphs.
+ */
+@include icon('user', '\E122', 'Person', #62AC75);  // $C_green from sassquatch (for rsvp 'going' style)
+@include icon('members', '\E124', 'Members'); // Members icon
+@include icon('infinite', '\E121', 'All Meetups');
+
+/* Interface Arrows (E181 - E1A0)
+ * Disclosure arrows and dropdown arrows that are for on-screen interactions,
+ * rather than navigation.
+ */
+@include icon('back', '\E181', 'Back Arrow');
+@include icon('forward', '\E182', 'Forward Arrow');
+@include icon('disclosure-right', '\E183', 'Disclosure Arrow Pointing Right');
+@include icon('disclosure-left', '\E184', 'Disclosure Arrow Pointing Left');
+@include icon('disclosure-down', '\E185', 'Disclosure Arrow Pointing Down');
+@include icon('disclosure-up', '\E186', 'Disclosure Arrow Pointing Up');
+@include icon('drop-down', '\E187', 'Drop Down Arrow');
+@include icon('drop-down-flipped', '\E188', 'Drop Down Arrow Flipped');
+
+
+/* Media (E1A1 - E1E0)
+ * Glyphs related to hypermedia or physical media (photos, phones, computers,
+ * papers, links...)
+ */
+@include icon('phone', '\E1A2', 'Mobile Phone');
+@include icon('camera', '\E1A5', 'Camera');
+@include icon('comment', '\E1A6', 'Comment bubble');
+@include icon('email', '\E1A8', 'Email');
+@include icon('link', '\E1A9', 'Link');
+@include icon('folder', '\E1B0', 'Folder');
+
+
+/* Validation (E1E1 - E1F0)
+ * Used for displaying warning, error, and confirmation glyphs.
+ */
+@include icon('error', '\E1E1', 'Error', $C_red);
+@include icon('prohibited', '\E1E3', 'Prohibited Action', #FDF77B);  // $C_yellow - needs to be put in meetup-swatches
+@include icon('spinner', '\E1E4', 'Spinner');
+// NOTE: Do not use `.icon-spinner`.
+// NOTE: icon-spinner is used in a different way than these others, since CSS3
+// transitions can only apply to raw HTML elements, rather than :before/:after
+// pseudoelements.
+
+
+/* 3rd Party Platforms, Brands (E1F1-E210)
+ * Used for social connect platforms, etc.
+ *
+ * Brand colors are from meetup-swatches - for gh-pages build, meetup-swatches
+ * will be automatically imported into this file. On chapstick, meetup-swatches
+ * is available from sassquatch
+ */
+@include icon('facebook-logo', '\E1F1', 'Facebook Logo', $C_facebook);
+.icon-facebook-logo-knockout { @extend .icon-facebook-logo; }  // facebook is `knockout` by default
+@include icon('twitter-logo', '\E1F3', 'Twitter Logo', $C_twitter);
+@include icon('twitter-logo-knockout', '\E1F4', 'Twitter Logo', $C_twitter);
+@include icon('google-logo', '\E1F5', 'Google Logo', $C_googleplus);  // avoid using this
+@include icon('google-logo-knockout', '\E1F6', 'Google Logo', $C_googleplus);  // this is the official logo
+@include icon('flickr-logo', '\E1F7', 'Flickr Logo', $C_flickr);
+@include icon('flickr-logo-knockout', '\E1F8', 'Flickr Logo', $C_flickr);
+@include icon('linkedin-logo', '\E1F9', 'LinkedIn Logo', $C_linkedin);
+.icon-linkedin-logo-knockout { @extend .icon-linkedin-logo; }  // linkedin is `knockout` by default
+@include icon('tumblr-logo', '\E1FA', 'Tumblr Logo', $C_tumblr);  // avoid using this - hard to differentiate from a real letter 't'
+@include icon('tumblr-logo-knockout', '\E1FB', 'Tumblr Logo', $C_tumblr);  // this is more official
+@include icon('github-logo', '\E1FC', 'Github Logo');
+
+/* RSVP Statuses (E0A7, E1E2, E1E3)
+ * Yes Waitlist No
+ */
+@include icon('rsvp-yes', '\E0A7', 'RSVP status yes', #62AC75);  // $C_green from sassquatch
+@include icon('rsvp-waitlist', '\E1E2', 'RSVP status waitlist');
+@include icon('rsvp-no', '\E1E3', 'RSVP status no', $C_red);
+
+/* Messages (E300 - E309)
+ * Glyphs for the messaging feature.
+ */
+@include icon('messaging-circle-person', '\E300', 'Person');
+@include icon('messaging-new-message', '\E303', 'New Message');
+@include icon('messaging-add-people', '\E305', 'Add People');
+@include icon('messaging-mute', '\E306', 'Mute');
+@include icon('messaging-leave', '\E304', 'Leave');
+@include icon('messaging-messages', '\E309', 'Messages');
+@include icon('messaging-messages-outline', '\E301', 'Messages');
+@include icon('messaging-report', '\E308', 'Report');
+@include icon('messaging-error', '\E307', 'Error');
+@include icon('messaging-archive', '\E30B', 'Archive');
+@include icon('messaging-unarchive', '\E30A', 'Unarchive');
+
+
+/*  ======================================================================== */
+/*  SPINNERS
+ *
+ *  We can't use the same syntax of :before or :after for spinners, since
+ *  Mobile Safari does not let us apply CSS3 transformations to pseudoelements.
+ *  This behavior is different from Desktop Safari and Android Webkit.
+ *
+ *  Instead, proper application in HTML will look something like this for now:
+ *
+ *		<div class="spinner">&#xE1E4;</div>
+ */
+
+.spinner {
+	font-family: 'RedLabel';
+	font-style: normal;
+	font-weight: normal; /* Used when placed in a header inline */
+
+	vertical-align: 0;
+	line-height: 1;
+	font-size: 32px;	/* Hard coded for now, arbitrary sizing. */
+	opacity: 0;			/* Hidden by default, shown by JS */
+}
+
+/*  ======================================================================== */
+/*  CHECKBOXES AND RADIOS
+ *
+ *  These require a bit of special handling, particularly in toggling between
+ *  checked and unchecked states.
+ *
+ *  Since there's a dependency that involves overwriting content and alt text,
+ *  it made more sense for it to be consolidated here, rather than in
+ *  sassquatch.
+
+ *  NOTE: On how these pseudoradio/checkboxes work:
+ *  The magic of sibling selectors means that we don't have to add
+ *  classes to make an active state appear in the UI in modern browser.
+ *
+ *  BUT for IE8, which doesn't support the `:checked` pseudoclass reliably,
+ *  we need to provide a fallback `input.checked` class state that can be
+ *  applied with JS.
+ *
+ *  All the code below does is essentially toggle the contents of our
+ *  `.icon-radio` and `.icon-checkbox` so that they behave like
+ *  `.icon-radio-selected` and `.icon-checkbox-selected`, so we don't have
+ *  to rely on JS to update the classes and change the contents.
+ *
+ *  For `.icon-checkbox-add`, it will switch to the value of `.checkbox-
+ *  selected-filled`.
+ */
+
+input:checked + .icon-radio,
+input.checked + .icon-radio {
+	&:before {
+		content: "\E0D1";
+	}
+	&:after {
+		content: "Selected Radio Button";
+	}
+}
+input:checked + .icon-checkbox,
+input.checked + .icon-checkbox {
+	&:before {
+		content: "\E0D3";
+	}
+	&:after {
+		content: "Selected Checkbox";
+	}
+}
+
+input:checked + .icon-checkbox-add,
+input.checked + .icon-checkbox-add {
+	&:before {
+		content: "\E0D5";
+	}
+	&:after {
+		content: "Selected Checkbox";
+	}
+}
