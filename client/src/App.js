@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import moment from 'moment';
 import StatusBar from './StatusBar';
 import Footer from './Footer';
+import Modal from './Modal';
 import logo from './logo.svg';
 import './App.css';
 
 class App extends Component {
   state = {
-    response: ''
+    response: '',
+    showModal: false
   };
 
   componentDidMount() {
@@ -28,6 +30,18 @@ class App extends Component {
     };
   };
 
+  hideModal = () => {
+    this.setState({
+      showModal: false
+    });
+  }
+
+  displayModal = () => {
+    this.setState({
+      showModal: true
+    });
+  }
+
   render() {
     const { monitors = {}, history } = this.state.response;
     const { products = [] } = monitors;
@@ -47,11 +61,19 @@ class App extends Component {
               <p>As of {moment().format('MMMM Do YYYY, h:mm a')}</p>
             </div>
             {products.map((product, key) => (
-              <StatusBar key={key} {...product} />
+              <StatusBar displayModal={this.displayModal} key={key} {...product} />
             ))}
           </div>
           <Footer />
         </section>
+        {this.state.showModal &&
+          <Modal>
+            <button className="App-close" onClick={this.hideModal}>
+              X
+          </button>
+            hey
+        </Modal>
+        }
       </div>
     );
   }

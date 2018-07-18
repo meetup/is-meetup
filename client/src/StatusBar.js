@@ -2,8 +2,25 @@ import React, { Component } from 'react';
 import './StatusBar.css';
 
 class StatusBar extends Component {
+  state = {
+    showTooltip: false
+  };
+
+  handleMouseEnter = () => {
+    this.setState({
+      showTooltip: true
+    });
+  };
+
+  handleMouseLeave = () => {
+    this.setState({
+      showTooltip: false
+    });
+  };
+
   render() {
-    const { product_name, monitors } = this.props;
+    const { displayModal, product_name, monitors } = this.props;
+    const { showTooltip } = this.state;
 
     console.log(this.props);
 
@@ -14,7 +31,17 @@ class StatusBar extends Component {
           <p className="StatusBar-uptime">99.976% uptime for the last 90 days</p>
         </div>
         <div className="StatusBar-bar">
-          <span className="StatusBar-bar-status success"></span>
+          {showTooltip &&
+            <div className="StatusBar-tooltip">
+              tools
+            </div>
+          }
+          <span
+            onClick={displayModal}
+            className="StatusBar-bar-status success"
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
+          />
           <span className="StatusBar-bar-status failure"></span>
           <span className="StatusBar-bar-status warning"></span>
         </div>

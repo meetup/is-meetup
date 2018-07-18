@@ -48,3 +48,7 @@
 .StatusBar-bar-status.warning:hover {
   background: rgb(255, 229, 51, 1);
 }
+
+.StatusBar-tooltip {
+  position: absolute;
+}
