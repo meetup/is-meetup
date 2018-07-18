@@ -26,3 +26,15 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.success {
+  background: rgb(0, 212, 128, 1);
+}
+
+.failure {
+  background: rgb(241, 58, 89, 1);
+}
+
+.warning {
+  background: rgb(255, 229, 51, 1);
+}

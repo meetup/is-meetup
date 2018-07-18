@@ -17,35 +17,33 @@
   display: flex;
 }
 
-.StatusBar-bar-success,
-.StatusBar-bar-failure,
-.StatusBar-bar-warning {
+.StatusBar-bar-status {
   height: 100%;
   display: inline-block;
   width: 100%;
   transition: 75ms background ease-in;
 }
 
-.StatusBar-bar-success {
+.StatusBar-bar-status.success {
   background: rgb(0, 212, 128, 0.6);
 }
 
-.StatusBar-bar-failure {
+.StatusBar-bar-status.failure {
   background: rgb(241, 58, 89, 0.6);
 }
 
-.StatusBar-bar-warning {
+.StatusBar-bar-status.warning {
   background: rgb(255, 229, 51, 0.6);
 }
 
-.StatusBar-bar-success:hover {
+.StatusBar-bar-status.success:hover {
   background: rgb(0, 212, 128, 1);
 }
 
-.StatusBar-bar-failure:hover {
+.StatusBar-bar-status.failure:hover {
   background: rgb(241, 58, 89, 1);
 }
 
-.StatusBar-bar-warning:hover {
+.StatusBar-bar-status.warning:hover {
   background: rgb(255, 229, 51, 1);
 }

@@ -14,9 +14,9 @@ class StatusBar extends Component {
           <p className="StatusBar-uptime">99.976% uptime for the last 90 days</p>
         </div>
         <div className="StatusBar-bar">
-          <span className="StatusBar-bar-success"></span>
-          <span className="StatusBar-bar-failure"></span>
-          <span className="StatusBar-bar-warning"></span>
+          <span className="StatusBar-bar-status success"></span>
+          <span className="StatusBar-bar-status failure"></span>
+          <span className="StatusBar-bar-status warning"></span>
         </div>
       </div>
     );

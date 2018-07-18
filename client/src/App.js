@@ -35,6 +35,7 @@ class App extends Component {
           </header>
           <div className="App-status-box">
             <div className="App-status-box-header">
+              <div className="App-current-status-circle success" />
               <h2>All services are online.</h2>
             </div>
             {products.map((product, key) => (
