@@ -33,7 +33,7 @@ class App extends Component {
         <section className="App-wrapper">
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
-            <h1 className="App-title">System Status</h1>
+            <h1 className="App-title">system status</h1>
           </header>
           <div className="App-status-box">
             <div className="App-status-box-header">

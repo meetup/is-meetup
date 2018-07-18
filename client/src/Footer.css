@@ -2,4 +2,6 @@
   padding: 0;
   list-style: none;
   color: rgba(46, 62, 72, 0.35);
+  font-size: 12px;
+  float: right;
 }
