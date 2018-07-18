@@ -5,15 +5,19 @@ const port = process.env.PORT || 5000;
 
 app.get('/api/monitors', (req, res) => {
   res.send({
-    product: "Sponsors",
-    monitors: [
+    products: [
       {
-        name: 'Monitor 1',
-        overall_state: 'Alert'
-      },
-      {
-        name: 'Monitor 2',
-        overall_state: 'OK'
+        product_name: "Sponsors",
+        monitors: [
+          {
+            monitor_name: 'Monitor 1',
+            overall_state: 'Alert'
+          },
+          {
+            monitor_name: 'Monitor 2',
+            overall_state: 'OK'
+          }
+        ]
       }
     ]
   });
