@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import StatusBar from './StatusBar';
 import logo from './logo.svg';
 import './App.css';
@@ -35,8 +36,10 @@ class App extends Component {
           </header>
           <div className="App-status-box">
             <div className="App-status-box-header">
-              <div className="App-current-status-circle success" />
-              <h2>All services are online.</h2>
+              <h2>
+                <span className="App-current-status-circle success" />All services are online.
+              </h2>
+              <p>As of {moment().format('MMMM Do YYYY, h:mm a')}</p>
             </div>
             {products.map((product, key) => (
               <StatusBar key={key} {...product} />
