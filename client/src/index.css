@@ -1,6 +1,13 @@
 @font-face {
-  font-family: 'Graphik Medium';
+  font-family: 'Graphik';
   src: url('/fonts/graphik/Graphik-Medium-Web.woff');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Graphik';
+  src: url('/fonts/graphik/Graphik-Regular-Web.woff');
+  font-weight: normal;
 }
 
 html,
@@ -11,7 +18,7 @@ body {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Graphik Medium', sans-serif;
+  font-family: 'Graphik', sans-serif;
   background: rgb(246, 247, 248);
   color: rgb(53, 62, 72);
 }

@@ -7,9 +7,45 @@
   justify-content: space-between;
 }
 
+.StatusBar-name, .StatusBar-uptime {
+  font-size: 14px;
+}
+
 .StatusBar-bar {
-  background: #00d480;
   width: 100%;
   height: 35px;
+  transition: 75ms background ease-in;
+  display: flex;
+}
+
+.StatusBar-bar-success,
+.StatusBar-bar-failure,
+.StatusBar-bar-warning {
+  height: 100%;
   display: inline-block;
+  width: 100%;
+}
+
+.StatusBar-bar-success {
+  background: rgb(0, 212, 128, 0.6);
+}
+
+.StatusBar-bar-failure {
+  background: rgb(241, 58, 89, 0.6);
+}
+
+.StatusBar-bar-warning {
+  background: rgb(255, 229, 51, 0.6);
+}
+
+.StatusBar-bar-success:hover {
+  background: rgb(0, 212, 128, 1);
+}
+
+.StatusBar-bar-failure:hover {
+  background: rgb(241, 58, 89, 1);
+}
+
+.StatusBar-bar-warning:hover {
+  background: rgb(255, 229, 51, 1);
 }

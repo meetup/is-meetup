@@ -10,10 +10,14 @@ class StatusBar extends Component {
     return (
       <div className="StatusBar">
         <div className="StatusBar-product-info">
-          <p>{product_name}</p>
-          <p>99.976% uptime for the last 90 days</p>
+          <p className="StatusBar-name">{product_name}</p>
+          <p className="StatusBar-uptime">99.976% uptime for the last 90 days</p>
         </div>
-        <span className="StatusBar-bar" />
+        <div className="StatusBar-bar">
+          <span className="StatusBar-bar-success"></span>
+          <span className="StatusBar-bar-failure"></span>
+          <span className="StatusBar-bar-warning"></span>
+        </div>
       </div>
     );
   }
