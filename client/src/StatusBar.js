@@ -1,28 +1,17 @@
 import React, { Component } from 'react';
 
-class App extends Component {
-  state = {
-    count: 1
-  };
-
-  handleClick = () => {
-    this.setState({
-      count: this.state.count + 1
-    })
-  }
-
+class StatusBar extends Component {
   render() {
+    const { product_name, monitors } = this.props;
+
+    console.log(this.props);
+
     return (
       <div>
-        {this.props.name}
-
-        <button onClick={this.handleClick}>
-          Click me
-        </button>
-        {this.state.count}
+        {product_name}
       </div>
     );
   }
 }
 
-export default App;
+export default StatusBar;

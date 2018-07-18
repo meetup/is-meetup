@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-
 import StatusBar from './StatusBar';
-
 import logo from './logo.svg';
-
 import './App.css';
 
 class App extends Component {
@@ -13,12 +10,12 @@ class App extends Component {
 
   componentDidMount() {
     this.callApi()
-      .then(res => this.setState({ response: res.express }))
+      .then(res => this.setState({ response: res }))
       .catch(err => console.log(err));
   }
 
   callApi = async () => {
-    const response = await fetch('/api/hello');
+    const response = await fetch('/api/monitors');
     const body = await response.json();
 
     if (response.status !== 200) throw Error(body.message);
@@ -27,6 +24,8 @@ class App extends Component {
   };
 
   render() {
+    const { products = [] } = this.state.response;
+
     return (
       <div className="App">
         <section className="App-wrapper">
@@ -35,7 +34,9 @@ class App extends Component {
             <h1 className="App-title">System Status</h1>
           </header>
           <div className="App-status-box">
-            {this.state.response}
+            {products.map((product, key) => (
+              <StatusBar key={key} {...product} />
+            ))}
           </div>
         </section>
       </div>
