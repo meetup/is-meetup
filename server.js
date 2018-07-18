@@ -23,43 +23,29 @@ const products_n_tags = [
 ];
 
 app.get('/api/monitors', (req, res) => {
-  // Later this should be from config.
-  var all_tags = _.flatten(products_n_tags.map( product =>
-    product.tags
-  ));
-  console.log(all_tags);
-
   dogapi.initialize(dog_options);
-  dogapi.monitor.getAll(
-    { monitor_tags: all_tags },
-    function(err, monitor_res) {
-      if(err) {
-        console.error(err);
-      }
 
-      monitor_res.forEach( mon => console.log(mon.name) );
-
-      var products_with_monitors = products_n_tags.map( product => {
-        var monitors = monitor_res.filter( monitor => {
-          // Does this monitor contain tags for the
-          // current product
-          return monitor.tags
-            .filter(tag => {
-              var find = product.tags.find(x => x == tag);
-              return (typeof find !== "undefined");
-            })
-            .length > 0;
+  Promise.all(products_n_tags.map( product => {
+    return new Promise( (resolve, rejected) => {
+      dogapi.monitor.getAll(
+        { monitor_tags: product.tags },
+        (err, monitor_res) => {
+          if(err) {
+            console.error(err);
+            rejected()
+          } else {
+            resolve(
+              Object.assign(product,
+                { monitors: monitor_res })
+            );
+          }
         });
-
-        return Object.assign(product,
-          { monitors: monitors });
       });
-
+    })).then( products => {
       res.send({
-        products: products_with_monitors
+        products: products
       });
-    }
-  );
+    });
 });
 
 
