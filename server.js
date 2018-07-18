@@ -1,6 +1,7 @@
 const express = require('express');
 const dogapi = require('dogapi');
 const _ = require('lodash');
+const moment = require('moment');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -17,8 +18,12 @@ const products_n_tags = [
     tags: ["service:sponsors"]
   },
   {
-    product_name: "Test hack",
+    product_name: "Test Hack",
     tags: ["hackathon:test"]
+  },
+  {
+    product_name: "Core Services",
+    tags: ["core-services"]
   }
 ];
 
@@ -50,15 +55,50 @@ app.get('/api/monitors', (req, res) => {
 
 app.get('/api/history', (req, res) => {
   dogapi.initialize(dog_options);
-  const now = parseInt(Date.now() / 1000);
-  const then = now - 7 * 24 * 3600;
+  const tonight = moment().endOf('day');
+  const seven_days_ago = moment().subtract(7, 'days').startOf('day');
 
-  dogapi.event.query(then, now, { tags: 'monitor' }, (err, response) => {
+  dogapi.event.query(seven_days_ago.unix(), tonight.unix(), { tags: 'monitor' }, (err, response) => {
     if (err) {
       console.error(err);
     }
 
-    res.send(response);
+    // Go through all events and match them to
+    // a product
+    var products = JSON.parse(JSON.stringify(products_n_tags))
+    products.forEach( product => {
+      product.events = [];
+    })
+    response.events.forEach( event => {
+      products.forEach( product => {
+        var diff = _.difference(product.tags, event.tags)
+        if(diff.length == 0) {
+          product.events.push(event);
+        }
+      })
+    });
+
+
+    products.forEach( product => {
+      product.events.forEach( event => {
+        var m = moment.unix(event.date_happened);
+        var key = m.format('YYYY-MM-DD');
+
+        if(_.isUndefined(product.events_by_day)) {
+          product.events_by_day = {
+            [key]: [event]
+          }
+        } else if (_.isUndefined(product.events_by_day[key])) {
+          product.events_by_day[key] = [event]
+        } else {
+          product.events_by_day[key].push(event)
+        }
+      })
+    });
+
+    res.send({
+      products: products
+    });
   });
 });
 
