@@ -34,6 +34,9 @@ class App extends Component {
             <h1 className="App-title">System Status</h1>
           </header>
           <div className="App-status-box">
+            <div className="App-status-box-header">
+              <h2>All services are online.</h2>
+            </div>
             {products.map((product, key) => (
               <StatusBar key={key} {...product} />
             ))}
