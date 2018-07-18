@@ -8,6 +8,11 @@
   padding: 0 40px;
 }
 
+.App,
+.App-wrapper {
+  height: inherit;
+}
+
 .App-logo {
   height: 40px;
 }
@@ -27,7 +32,7 @@
 
 .App-status-box {
   background: #fff;
-  height: 600px;
+  min-height: 600px;
   border: 1px solid rgba(46, 62, 72, 0.12);
 }
 
@@ -35,6 +40,9 @@
   text-align: left;
   border-bottom: 1px solid rgba(46, 62, 72, 0.12);
   padding: 20px;
+}
+
+.App-status-box-header > * {
   font-weight: normal;
 }
 

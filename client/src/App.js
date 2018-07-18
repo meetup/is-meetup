@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 import StatusBar from './StatusBar';
+import Footer from './Footer';
 import logo from './logo.svg';
 import './App.css';
 
@@ -45,6 +46,7 @@ class App extends Component {
               <StatusBar key={key} {...product} />
             ))}
           </div>
+          <Footer />
         </section>
       </div>
     );

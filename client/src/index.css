@@ -23,6 +23,10 @@ body {
   color: rgb(53, 62, 72);
 }
 
+#root {
+  height: inherit;
+}
+
 * {
   box-sizing: border-box;
 }
