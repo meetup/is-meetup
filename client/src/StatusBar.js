@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import moment from 'moment';
+import _ from 'lodash';
 import './StatusBar.css';
 
 class StatusBar extends Component {
@@ -18,11 +20,37 @@ class StatusBar extends Component {
     });
   };
 
-  render() {
-    const { displayModal, product_name, monitors } = this.props;
-    const { showTooltip } = this.state;
+  getPastWeek = () => (
+    [0, 1, 2, 3, 4, 5, 6, 7].map(day => {
+      const today = moment();
+      return today.subtract(day, 'days').format('YYYY-MM-DD');
+    })
+  );
 
-    console.log(this.props);
+  getStatus = () => {
+    const { events_by_day } = this.props;
+    const thisWeek = this.getPastWeek();
+    const eventsArray = !_.isEmpty(events_by_day) ? Object.keys(events_by_day) : [];
+
+    return thisWeek.map(day => {
+      const status = {
+        day,
+        status: 'success',
+        events: []
+      };
+
+      if (eventsArray.indexOf(day) > -1) {
+        status.status = 'error';
+        status.events = events_by_day[day];
+      }
+
+      return status
+    });
+  };
+
+  render() {
+    const { displayModal, product_name, events_by_day = {} } = this.props;
+    const { showTooltip } = this.state;
 
     return (
       <div className="StatusBar">
@@ -36,14 +64,18 @@ class StatusBar extends Component {
               tools
             </div>
           }
-          <span
-            onClick={displayModal}
-            className="StatusBar-bar-status success"
-            onMouseEnter={this.handleMouseEnter}
-            onMouseLeave={this.handleMouseLeave}
-          />
-          <span className="StatusBar-bar-status failure"></span>
-          <span className="StatusBar-bar-status warning"></span>
+          {this.getStatus().map((info) => (
+            <span
+              onClick={() => {
+                if (info.status !== 'success') {
+                  displayModal(info);
+                }
+              }}
+              className={`StatusBar-bar-status ${info.status}`}
+              onMouseEnter={this.handleMouseEnter}
+              onMouseLeave={this.handleMouseLeave}
+            />
+          ))}
         </div>
       </div>
     );

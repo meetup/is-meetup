@@ -35,7 +35,7 @@ body {
   background: rgb(0, 212, 128, 1);
 }
 
-.failure {
+.error {
   background: rgb(241, 58, 89, 1);
 }
 

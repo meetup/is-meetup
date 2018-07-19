@@ -9,7 +9,8 @@ import './App.css';
 class App extends Component {
   state = {
     response: '',
-    showModal: false
+    showModal: false,
+    info: {}
   };
 
   componentDidMount() {
@@ -32,19 +33,21 @@ class App extends Component {
 
   hideModal = () => {
     this.setState({
-      showModal: false
+      showModal: false,
+      info: {}
     });
   }
 
-  displayModal = () => {
+  displayModal = (info) => {
     this.setState({
-      showModal: true
+      showModal: true,
+      info
     });
   }
 
   render() {
-    const { monitors = {}, history } = this.state.response;
-    const { products = [] } = monitors;
+    const { monitors = {}, history = {} } = this.state.response;
+    const { products = [] } = history;
 
     return (
       <div className="App">
@@ -70,9 +73,13 @@ class App extends Component {
           <Modal>
             <button className="App-close" onClick={this.hideModal}>
               X
-          </button>
-            hey
-        </Modal>
+            </button>
+            <div>
+              {this.state.info.events.map(event => {
+                return <p>{event.title}</p>;
+              })}
+            </div>
+          </Modal>
         }
       </div>
     );

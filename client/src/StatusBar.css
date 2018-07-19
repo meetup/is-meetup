@@ -23,13 +23,14 @@
   display: inline-block;
   width: 100%;
   transition: 75ms background ease-in;
+  margin-right: 2px;
 }
 
 .StatusBar-bar-status.success {
   background: rgb(0, 212, 128, 0.6);
 }
 
-.StatusBar-bar-status.failure {
+.StatusBar-bar-status.error {
   background: rgb(241, 58, 89, 0.6);
 }
 
@@ -41,7 +42,7 @@
   background: rgb(0, 212, 128, 1);
 }
 
-.StatusBar-bar-status.failure:hover {
+.StatusBar-bar-status.error:hover {
   background: rgb(241, 58, 89, 1);
 }
 
