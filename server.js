@@ -30,6 +30,10 @@ const products_n_tags = [
   {
     product_name: "Switchboard",
     tags: ["process:switchboardd"]
+  },
+  {
+    product_name: "Core Services",
+    tags: ["core-services"]
   }
 ];
 
@@ -53,6 +57,19 @@ app.get('/api/monitors', (req, res) => {
         });
     });
   })).then(products => {
+    products.forEach( product => {
+      var overall_states =
+        new Set(product.monitors.map(monitor => monitor.overall_state));
+
+      if(overall_states.has("Alert")) {
+        product.overall_state = "Alert";
+      } else if (overall_states.has("Warn") || overall_states.has("No Data")) {
+        product.overall_state = "Warn";
+      } else {
+        product.overall_state = "Ok";
+      }
+    });
+
     res.send({
       products: products
     });
