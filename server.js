@@ -6,6 +6,8 @@ const moment = require('moment');
 const app = express();
 const port = process.env.PORT || 5000;
 
+const event_statuses = new Set(['warning', 'error']);
+
 const dog_options = {
   api_key: process.env.DD_API_KEY,
   app_key: process.env.DD_APP_KEY
@@ -18,12 +20,16 @@ const products_n_tags = [
     tags: ["service:sponsors"]
   },
   {
-    product_name: "Test Hack",
-    tags: ["hackathon:test"]
+    product_name: "Pro Group Search",
+    tags: ["bucket:chapter_sql"]
   },
   {
-    product_name: "Core Services",
-    tags: ["core-services"]
+    product_name: "All of Pro",
+    tags: ["team:pro"]
+  },
+  {
+    product_name: "Switchboard",
+    tags: ["process:switchboardd"]
   }
 ];
 
@@ -56,7 +62,7 @@ app.get('/api/monitors', (req, res) => {
 app.get('/api/history', (req, res) => {
   dogapi.initialize(dog_options);
   const tonight = moment().endOf('day');
-  const seven_days_ago = moment().subtract(7, 'days').startOf('day');
+  const seven_days_ago = moment().subtract(30, 'days').startOf('day');
 
   dogapi.event.query(seven_days_ago.unix(), tonight.unix(), { tags: 'monitor' }, (err, response) => {
     if (err) {
@@ -72,7 +78,10 @@ app.get('/api/history', (req, res) => {
     response.events.forEach( event => {
       products.forEach( product => {
         var diff = _.difference(product.tags, event.tags)
-        if(diff.length == 0) {
+        if(
+          diff.length == 0 &&
+          event_statuses.has(event.alert_type)
+        ) {
           product.events.push(event);
         }
       })
@@ -101,6 +110,22 @@ app.get('/api/history', (req, res) => {
     });
   });
 });
+
+
+app.get('/api/history/all', (req, res) => {
+  dogapi.initialize(dog_options);
+  const tonight = moment().endOf('day');
+  const seven_days_ago = moment().subtract(30, 'days').startOf('day');
+
+  dogapi.event.query(seven_days_ago.unix(), tonight.unix(), { tags: 'monitor' }, (err, response) => {
+    if (err) {
+      console.error(err);
+    }
+
+    res.send(response);
+  });
+});
+
 
 app.get('/api/hello', (req, res) => {
   res.send({ express: 'Hello From Express' });
