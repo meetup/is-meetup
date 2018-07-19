@@ -45,6 +45,20 @@ class App extends Component {
     });
   }
 
+  getStateClassName = (monitor) => {
+    if (monitor.overall_state === 'OK') {
+      return 'success';
+    }
+
+    if (monitor.overall_state === 'Warn' || monitor.overall_state === 'No Data') {
+      return 'warning';
+    }
+
+    if (monitor.overall_state === 'Alert') {
+      return 'error';
+    }
+  };
+
   render() {
     const { monitors = {}, history = {} } = this.state.response;
     const { products = [] } = history;
@@ -61,7 +75,21 @@ class App extends Component {
               Current Status by Service
             </div>
             {products.map((product, key) => (
-              <StatusBar displayModal={this.displayModal} key={key} {...product} />
+              <div>
+                <div className="App-current-status">
+                  <h2>{product.product_name}</h2>
+                  <ul className="App-monitor-list">
+                    {product.monitors.map(monitor => (
+                      <li className="App-monitor-list-item">
+                        <p>{monitor.name}</p>
+                        <span className={`App-current-status-circle-small ${this.getStateClassName(monitor)}`} />
+                      </li>
+                    ))}
+                  </ul>
+                  {/* No monitors matched. */}
+                </div>
+                <StatusBar displayModal={this.displayModal} key={key} {...product} />
+              </div>
             ))}
           </div>
           <Footer />

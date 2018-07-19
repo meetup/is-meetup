@@ -61,6 +61,15 @@
   display: inline-block;
 }
 
+.App-current-status-circle-small {
+  width: 15px;
+  height: 15px;
+  border-radius: 100%;
+  position: relative;
+  top: 1px;
+  display: inline-block;
+}
+
 .App-close {
   position: absolute;
   right: 10px;
@@ -68,4 +77,36 @@
   background: none;
   border: none;
   font-size: 20px;
+}
+
+.App-current-status {
+  padding: 0 20px;
+}
+
+.App-current-status h2 {
+  text-align: left;
+}
+
+.App-monitor-list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.App-monitor-list-item {
+  width: 50%;
+  min-height: 80px;
+  text-align: left;
+  line-height: 1.4;
+  padding: 0 15px;
+  border: 1px solid rgba(46, 62, 72, 0.12);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.App-monitor-list-item p {
+  width: 90%;
 }
