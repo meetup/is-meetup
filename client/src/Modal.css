@@ -17,6 +17,7 @@
   position: relative;
   padding: 20px;
   overflow: scroll;
+  line-height: 2;
 }
 
 .Modal-datetime {
@@ -51,4 +52,15 @@
   margin-left: 0.5em;
   margin-right: 0.5em;
   padding: 0.2em;
+}
+
+.Modal-link {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  padding: 5px;
+}
+
+.Modal-link:hover {
+  background: #f3f3f3;
 }

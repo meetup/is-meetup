@@ -77,7 +77,10 @@ class App extends Component {
             <div>
               {this.state.events.map(event => {
                 return (
-                  <p>
+                  <a
+                    className="Modal-link"
+                    href={`https://app.datadoghq.com${event.url}`}
+                    target="_blank">
                     <span className="Modal-datetime">
                       {event.date_happened_formatted}
                     </span>
@@ -85,7 +88,7 @@ class App extends Component {
                       {event.alert_type}
                     </span>
                     {event.title}
-                  </p>
+                  </a>
                 );
               })}
             </div>
