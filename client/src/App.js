@@ -10,7 +10,8 @@ class App extends Component {
   state = {
     response: '',
     showModal: false,
-    events: []
+    events: [],
+    showMonitors: false
   };
 
   componentDidMount() {
@@ -46,17 +47,23 @@ class App extends Component {
   }
 
   getStateClassName = (monitor) => {
-    if (monitor.overall_state === 'OK') {
+    if (monitor.overall_state.toLowerCase() === 'ok') {
       return 'success';
     }
 
-    if (monitor.overall_state === 'Warn' || monitor.overall_state === 'No Data') {
+    if (monitor.overall_state.toLowerCase() === 'warn' || monitor.overall_state.toLowerCase() === 'no data') {
       return 'warning';
     }
 
-    if (monitor.overall_state === 'Alert') {
+    if (monitor.overall_state.toLowerCase() === 'alert') {
       return 'error';
     }
+  };
+
+  handleMonitors = () => {
+    this.setState({
+      showMonitors: !this.state.showMonitors
+    });
   };
 
   render() {
@@ -72,21 +79,30 @@ class App extends Component {
           </header>
           <div className="App-status-box">
             <div className="App-status-box-header">
-              Current Status by Service
+              Current Status / Past 30 days
             </div>
             {products.map((product, key) => (
               <div>
-                <div className="App-current-status">
-                  <h2>{product.product_name}</h2>
-                  <ul className="App-monitor-list">
-                    {product.monitors.map(monitor => (
-                      <li className="App-monitor-list-item">
-                        <p>{monitor.name}</p>
-                        <span className={`App-current-status-circle-small ${this.getStateClassName(monitor)}`} />
-                      </li>
-                    ))}
-                  </ul>
-                  {/* No monitors matched. */}
+                <div className="App-current-status" onClick={this.handleMonitors}>
+                  <div className="App-current-status-header">
+                    <div className="App-current-status-header-icons">
+                      <span className={`App-current-status-circle ${this.getStateClassName(product)}`} />
+                      <h2>{product.product_name}</h2>
+                    </div>
+                    <span className={`chevron ${this.state.showMonitors ? '' : 'bottom'}`} />
+                  </div>
+                  {this.state.showMonitors &&
+                    <ul className="App-monitor-list">
+                      {product.monitors.map(monitor => (
+                        <li className="App-monitor-list-item">
+                          <a target="_blank" href={`https://app.datadoghq.com/monitors/${monitor.id}`}>
+                            <p>{monitor.name}</p>
+                            <span className={`App-current-status-circle-small ${this.getStateClassName(monitor)}`} />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  }
                 </div>
                 <StatusBar displayModal={this.displayModal} key={key} {...product} />
               </div>
@@ -94,7 +110,8 @@ class App extends Component {
           </div>
           <Footer />
         </section>
-        {this.state.showModal &&
+        {
+          this.state.showModal &&
           <Modal>
             <button className="App-close" onClick={this.hideModal}>
               X

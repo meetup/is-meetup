@@ -52,7 +52,7 @@ class StatusBar extends Component {
     return (
       <div className="StatusBar">
         <div className="StatusBar-product-info">
-          <p className="StatusBar-uptime">Past 30 days</p>
+          {/* <p className="StatusBar-uptime">Past 30 days</p> */}
         </div>
         <div className="StatusBar-bar">
           {this.getStatus().map((info) => (
