@@ -25,7 +25,20 @@ class StatusBar extends Component {
       };
 
       if (eventsArray.indexOf(day) > -1) {
-        status.status = 'error';
+        const currentEvent = events_by_day[day];
+        let currentStatus = 'success';
+
+        currentEvent.forEach((event) => {
+          if (event.alert_type === 'warning') {
+            currentStatus = event.alert_type;
+          }
+
+          if (event.alert_type === 'error') {
+            currentStatus = event.alert_type;
+          }
+        });
+
+        status.status = currentStatus;
         status.events = events_by_day[day];
       }
 
