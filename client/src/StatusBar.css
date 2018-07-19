@@ -50,6 +50,12 @@
   background: rgb(255, 229, 51, 1);
 }
 
+.StatusBar-bar-status-color {
+  height: 100%;
+  width: 100%;
+  display: inline-block;
+}
+
 .StatusBar-tooltip {
   position: absolute;
 }

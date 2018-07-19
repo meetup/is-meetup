@@ -10,7 +10,7 @@ class App extends Component {
   state = {
     response: '',
     showModal: false,
-    info: {}
+    events: []
   };
 
   componentDidMount() {
@@ -34,14 +34,14 @@ class App extends Component {
   hideModal = () => {
     this.setState({
       showModal: false,
-      info: {}
+      events: []
     });
   }
 
-  displayModal = (info) => {
+  displayModal = (events) => {
     this.setState({
       showModal: true,
-      info
+      events
     });
   }
 
@@ -75,7 +75,7 @@ class App extends Component {
               X
             </button>
             <div>
-              {this.state.info.events.map(event => {
+              {this.state.events.map(event => {
                 return <p>{event.title}</p>;
               })}
             </div>
