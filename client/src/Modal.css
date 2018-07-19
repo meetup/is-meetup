@@ -11,7 +11,7 @@
 .Modal-wrapper {
   height: 100%;
   width: 100%;
-  max-width: 700px;
+  max-width: 1000px;
   background: white;
   margin: 0 auto;
   position: relative;
@@ -64,4 +64,17 @@
 
 .Modal-link:hover {
   background: #f3f3f3;
+}
+
+.Modal-header {
+  border: 1px solid rgba(46, 62, 72, 0.12);
+  background-color: #F5F5F5;
+  font-weight: bold;
+  font-size: 0.9em;
+  padding: 5px;
+}
+
+.Modal-events-list {
+  border: 1px solid rgba(46, 62, 72, 0.12);
+  border-top: none;
 }
