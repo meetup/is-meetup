@@ -2,40 +2,26 @@ const express = require('express');
 const dogapi = require('dogapi');
 const _ = require('lodash');
 const moment = require('moment');
+const yaml = require('js-yaml');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 const event_statuses = new Set(['warning', 'error']);
 
+var products_n_tags;
+try {
+  var doc = yaml.safeLoad(fs.readFileSync('config.yaml', 'utf8'));
+  products_n_tags = doc.products
+} catch (e) {
+  console.log(e)
+}
+
 const dog_options = {
   api_key: process.env.DD_API_KEY,
   app_key: process.env.DD_APP_KEY
 };
-
-// Later this should be from config.
-const products_n_tags = [
-  {
-    product_name: "Sponsors",
-    tags: ["service:sponsors"]
-  },
-  {
-    product_name: "Pro Group Search",
-    tags: ["bucket:chapter_sql"]
-  },
-  {
-    product_name: "All of Pro",
-    tags: ["team:pro"]
-  },
-  {
-    product_name: "Switchboard",
-    tags: ["process:switchboardd"]
-  },
-  {
-    product_name: "Core Services",
-    tags: ["core-services"]
-  }
-];
 
 app.get('/api/monitors', (req, res) => {
   dogapi.initialize(dog_options);

@@ -1,0 +1,16 @@
+products:
+- product_name: All of Pro
+  tags:
+  - team:pro
+- product_name: Sponsors
+  tags:
+  - service:sponsors
+- product_name: Switchboard
+  tags:
+  - process:switchboardd
+- product_name: Pro Group Search
+  tags:
+  - bucket:chapter_sql
+- product_name: Core Services
+  tags:
+  - core-services
