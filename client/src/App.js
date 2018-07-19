@@ -74,22 +74,27 @@ class App extends Component {
               X
             </button>
             <div>
-              {this.state.events.map(event => {
-                return (
-                  <a
-                    className="Modal-link"
-                    href={`https://app.datadoghq.com${event.url}`}
-                    target="_blank">
-                    <span className="Modal-datetime">
-                      {event.date_happened_formatted}
-                    </span>
-                    <span className={`Modal-badge-${event.alert_type}`}>
-                      {event.alert_type}
-                    </span>
-                    {event.title}
-                  </a>
-                );
-              })}
+              <div className="Modal-header">
+                Events
+              </div>
+              <div className="Modal-events-list">
+                {this.state.events.map(event => {
+                  return (
+                    <a
+                      className="Modal-link"
+                      href={`https://app.datadoghq.com${event.url}`}
+                      target="_blank">
+                      <span className="Modal-datetime">
+                        {event.date_happened_formatted}
+                      </span>
+                      <span className={`Modal-badge-${event.alert_type}`}>
+                        {event.alert_type}
+                      </span>
+                      {event.title}
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </Modal>
         }
