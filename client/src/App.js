@@ -54,14 +54,11 @@ class App extends Component {
         <section className="App-wrapper">
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
-            <h1 className="App-title">system status</h1>
+            <h1 className="App-title">Meetup Pro Status</h1>
           </header>
           <div className="App-status-box">
             <div className="App-status-box-header">
-              <h2>
-                <span className="App-current-status-circle success" />All services are online.
-              </h2>
-              <p>As of {moment().format('MMMM Do YYYY, h:mm a')}</p>
+              Current Status by Service
             </div>
             {products.map((product, key) => (
               <StatusBar displayModal={this.displayModal} key={key} {...product} />
