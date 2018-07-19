@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 
 class CurrentStatus extends Component {
   state = {
@@ -18,14 +19,15 @@ class CurrentStatus extends Component {
   };
 
   render() {
-    const { displayModal, status = '', events = [] } = this.props;
+    const { displayModal, status = '', events = [], day = '' } = this.props;
     const { showTooltip } = this.state;
 
     return (
       <div className={`StatusBar-bar-status ${status}`}>
         {showTooltip &&
           <div className="StatusBar-tooltip">
-            {events.length} Events
+            <p>{moment(day).format('MMMM Do')}</p>
+            <p>{events.length} {events.length === 1 ? 'Event' : 'Events'}</p>
           </div>
         }
         <span

@@ -6,10 +6,10 @@ import './StatusBar.css';
 
 class StatusBar extends Component {
   getPastWeek = () => (
-    [0, 1, 2, 3, 4, 5, 6, 7].map(day => {
+    [...Array(30).keys()].map(day => {
       const today = moment();
       return today.subtract(day, 'days').format('YYYY-MM-DD');
-    })
+    }).reverse()
   );
 
   getStatus = () => {
