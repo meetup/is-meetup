@@ -76,7 +76,17 @@ class App extends Component {
             </button>
             <div>
               {this.state.events.map(event => {
-                return <p>{event.title}</p>;
+                return (
+                  <p>
+                    <span className="Modal-datetime">
+                      {event.date_happened_formatted}
+                    </span>
+                    <span className={`Modal-badge-${event.alert_type}`}>
+                      {event.alert_type}
+                    </span>
+                    {event.title}
+                  </p>
+                );
               })}
             </div>
           </Modal>

@@ -76,6 +76,9 @@ app.get('/api/history', (req, res) => {
       product.events = [];
     })
     response.events.forEach( event => {
+      event.date_happened_formatted =
+        moment.unix(event.date_happened).format('YYYY-MM-DD HH:mm:ss ZZ');
+
       products.forEach( product => {
         var diff = _.difference(product.tags, event.tags)
         if(
