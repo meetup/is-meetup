@@ -136,6 +136,10 @@
   cursor: pointer;
 }
 
+.chevron {
+  margin-left: 30px;
+}
+
 .chevron::before {
 	border-style: solid;
 	border-width: 2px 2px 0 0;
@@ -153,4 +157,10 @@
 .chevron.bottom:before {
 	top: 0;
 	transform: rotate(135deg);
+}
+
+.App-monitor-count {
+  font-size: 12px;
+  margin: 0;
+  display: inline;
 }

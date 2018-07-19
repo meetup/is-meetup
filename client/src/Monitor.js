@@ -43,9 +43,12 @@ class Monitor extends Component {
               <span className={`App-current-status-circle ${this.getStateClassName(product)}`} />
               <h2>{product.product_name}</h2>
             </div>
-            {product.monitors.length > 0 &&
-              <span className={`chevron ${this.state.showMonitors ? '' : 'bottom'}`} />
-            }
+            <div>
+              <p className="App-monitor-count">{product.monitors.length} monitors</p>
+              {product.monitors.length > 0 &&
+                <span className={`chevron ${this.state.showMonitors ? '' : 'bottom'}`} />
+              }
+            </div>
           </div>
           {this.state.showMonitors &&
             <ul className="App-monitor-list">
